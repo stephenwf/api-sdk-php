@@ -1,6 +1,8 @@
 <?php
 
-$finder = Symfony\CS\Finder\DefaultFinder::create();
+$finder = Symfony\CS\Finder\DefaultFinder::create()
+    ->exclude('vendor-extra')
+;
 
 return Symfony\CS\Config\Config::create()
     ->level(Symfony\CS\FixerInterface::SYMFONY_LEVEL)

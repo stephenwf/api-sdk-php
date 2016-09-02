@@ -1,0 +1,29 @@
+{
+    "name": "elife/api-sdk",
+    "description": "eLife Sciences API SDK",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "eLife\\ApiSdk\\": "./src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "test\\eLife\\ApiSdk\\": "./test"
+        }
+    },
+    "require": {
+        "php": "^7.0",
+        "elife/api-client": "^1.0@dev",
+        "guzzlehttp/promises": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.2"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
+    }
+}

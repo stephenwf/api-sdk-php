@@ -3,12 +3,9 @@
 namespace test\eLife\ApiSdk\Client;
 
 use eLife\ApiClient\ApiClient\SubjectsClient;
-use eLife\ApiClient\MediaType;
 use eLife\ApiSdk\Client\Subjects;
 use eLife\ApiSdk\Collection;
 use eLife\ApiSdk\Model\Subject;
-use GuzzleHttp\Psr7\Request;
-use GuzzleHttp\Psr7\Response;
 use test\eLife\ApiSdk\ApiTestCase;
 
 final class SubjectsTest extends ApiTestCase
@@ -237,74 +234,5 @@ final class SubjectsTest extends ApiTestCase
         foreach ($subjects->sort($sort) as $i => $subject) {
             $this->assertSame('subject'.(5 - $i), $subject->getId());
         }
-    }
-
-    private function mockSubjectListCall(int $page, int $perPage, int $total)
-    {
-        $subjects = [];
-
-        for ($i = 1; $i <= $perPage; ++$i) {
-            $id = $i + ($page * $perPage) - $perPage;
-
-            $subjects[] = $this->createSubjectJson($id);
-        }
-
-        $this->mock(
-            new Request(
-                'GET',
-                'http://api.elifesciences.org/subjects?page='.$page.'&per-page='.$perPage.'&order=desc',
-                ['Accept' => new MediaType(SubjectsClient::TYPE_SUBJECT_LIST, 1)]
-            ),
-            new Response(
-                200,
-                ['Content-Type' => new MediaType(SubjectsClient::TYPE_SUBJECT_LIST, 1)],
-                json_encode([
-                    'total' => $total,
-                    'items' => $subjects,
-                ])
-            )
-        );
-    }
-
-    private function mockSubjectCall(int $number)
-    {
-        $this->mock(
-            new Request(
-                'GET',
-                'http://api.elifesciences.org/subjects/subject'.$number,
-                ['Accept' => new MediaType(SubjectsClient::TYPE_SUBJECT, 1)]
-            ),
-            new Response(
-                200,
-                ['Content-Type' => new MediaType(SubjectsClient::TYPE_SUBJECT, 1)],
-                json_encode($this->createSubjectJson($number))
-            )
-        );
-    }
-
-    private function createSubjectJson(int $number)
-    {
-        return [
-            'id' => 'subject'.$number,
-            'name' => 'Subject '.$number.' name',
-            'impactStatement' => 'Subject '.$number.' impact statement',
-            'image' => [
-                'alt' => '',
-                'sizes' => [
-                    '2:1' => [
-                        '900' => 'https://placehold.it/900x450',
-                        '1800' => 'https://placehold.it/1800x900',
-                    ],
-                    '16:9' => [
-                        '250' => 'https://placehold.it/250x141',
-                        '500' => 'https://placehold.it/500x281',
-                    ],
-                    '1:1' => [
-                        '70' => 'https://placehold.it/70x70',
-                        '140' => 'https://placehold.it/140x140',
-                    ],
-                ],
-            ],
-        ];
     }
 }

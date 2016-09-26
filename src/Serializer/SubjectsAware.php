@@ -20,7 +20,7 @@ trait SubjectsAware
         $this->subjects = $subjects;
     }
 
-    final private function getSubjects(array $subjects) : PromiseInterface
+    final private function getSubjects($subjects) : PromiseInterface
     {
         if ($subjects instanceof ArrayCollection) {
             $subjects = $subjects->toArray();

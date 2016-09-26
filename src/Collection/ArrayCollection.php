@@ -6,10 +6,11 @@ use ArrayIterator;
 use eLife\ApiSdk\Collection;
 use GuzzleHttp\Promise\PromiseInterface;
 use IteratorAggregate;
+use JsonSerializable;
 use Traversable;
 use function GuzzleHttp\Promise\promise_for;
 
-final class ArrayCollection implements IteratorAggregate, Collection
+final class ArrayCollection implements IteratorAggregate, Collection, JsonSerializable
 {
     private $array;
 
@@ -65,5 +66,10 @@ final class ArrayCollection implements IteratorAggregate, Collection
     public function reverse() : Collection
     {
         return new self(array_reverse($this->array));
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->array;
     }
 }

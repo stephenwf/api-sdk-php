@@ -118,6 +118,22 @@ final class ApiSdkTest extends ApiTestCase
 
     /**
      * @test
+     */
+    public function it_support_encoding()
+    {
+        $this->apiSdk->getSerializer()->supportsEncoding('json');
+    }
+
+    /**
+     * @test
+     */
+    public function it_support_decoding()
+    {
+        $this->apiSdk->getSerializer()->supportsDecoding('json');
+    }
+
+    /**
+     * @test
      * @dataProvider denormalizeBlocksProvider
      */
     public function it_can_denormalize_blocks(string $block)

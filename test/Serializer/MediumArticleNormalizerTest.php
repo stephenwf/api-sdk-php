@@ -3,6 +3,7 @@
 namespace test\eLife\ApiSdk\Serializer;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use eLife\ApiSdk\Model\Image;
 use eLife\ApiSdk\Model\ImageSize;
 use eLife\ApiSdk\Model\MediumArticle;
@@ -67,7 +68,7 @@ final class MediumArticleNormalizerTest extends PHPUnit_Framework_TestCase
 
     public function normalizeProvider() : array
     {
-        $date = new DateTimeImmutable();
+        $date = (new DateTimeImmutable())->setTimezone(new DateTimeZone('UTC'));
         $image = new Image('alt', [new ImageSize('2:1', [900 => 'https://placehold.it/900x450'])]);
 
         return [

@@ -18,6 +18,7 @@ use eLife\ApiSdk\Serializer\Block;
 use eLife\ApiSdk\Serializer\BlogArticleNormalizer;
 use eLife\ApiSdk\Serializer\ImageNormalizer;
 use eLife\ApiSdk\Serializer\SubjectNormalizer;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Serializer;
@@ -28,6 +29,8 @@ final class BlogArticleNormalizerTest extends ApiTestCase
 {
     /** @var BlogArticleNormalizer */
     private $normalizer;
+    /** @var Serializer */
+    private $serializer;
 
     /**
      * @before
@@ -36,13 +39,13 @@ final class BlogArticleNormalizerTest extends ApiTestCase
     {
         $this->normalizer = new BlogArticleNormalizer();
 
-        $serializer = new Serializer([
+        $this->serializer = new Serializer([
             $this->normalizer,
             new ImageNormalizer(),
             new SubjectNormalizer(),
             new Block\ParagraphNormalizer(),
-        ]);
-        $this->normalizer->setSubjects(new Subjects(new SubjectsClient($this->getHttpClient()), $serializer));
+        ], [new JsonEncoder()]);
+        $this->normalizer->setSubjects(new Subjects(new SubjectsClient($this->getHttpClient()), $this->serializer));
     }
 
     /**
@@ -74,6 +77,31 @@ final class BlogArticleNormalizerTest extends ApiTestCase
             'blog article with format' => [$blogArticle, 'foo', true],
             'non-blog article' => [$this, null, false],
         ];
+    }
+
+    /**
+     * @test
+     */
+    public function is_can_serialize_and_deserialize_blog_articles()
+    {
+        // Mock a call that is apparently made? Maybe this should be a part of the JSON serialization.
+        // Certainly in search we will want to create out own Subjects Client -
+        // See: https://github.com/elifesciences/search/pull/13/files#diff-baab24df189be238c73edb1fdd3c90d3R1
+        $this->mockSubjectCall(1);
+        // Plain JSON object representation of resource.
+        $json = '{"content":[{"type":"paragraph","text":"text"}],"id":"id","impactStatement":"impact statement","published":"2016-09-26T16:40:31+01:00","subjects":["subject1"],"title":"title"}';
+        // Double the conversion.
+        $deserialized = $this->serializer->deserialize($json, BlogArticle::class, 'json');
+        // Can check contents of `$deserialized` here, but it the code creating is should
+        // be covered by the normalize functions.
+        $serialized = $this->serializer->serialize($deserialized, 'json');
+        // Check that no information was lost.
+        // The body and subjects were lost previously due to the ArrayCollection being
+        // passed through to getSubjects() on the subjects aware.
+        // I'm not sure why this didn't break the tests since on the method below
+        // you are creating an ArrayCollection and normalizing it, but it is not
+        // throwing.
+        $this->assertJsonStringEqualsJsonString($json, $serialized);
     }
 
     /**

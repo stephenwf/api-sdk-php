@@ -75,7 +75,7 @@ final class BlogArticleNormalizer implements NormalizerInterface, DenormalizerIn
             })->toArray();
         }
 
-        return all($data)->wait();
+        return $data;
     }
 
     public function supportsNormalization($data, $format = null) : bool

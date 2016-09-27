@@ -101,15 +101,15 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                     'title' => 'title',
                     'published' => $date->format(DATE_ATOM),
                     'impactStatement' => 'impact statement',
-                    'content' => new ArrayCollection([
+                    'content' => [
                         [
                             'type' => 'paragraph',
                             'text' => 'text',
                         ],
-                    ]),
-                    'subjects' => new ArrayCollection([
+                    ],
+                    'subjects' => [
                         'id',
-                    ]),
+                    ],
                 ],
             ],
             'minimum' => [
@@ -119,12 +119,12 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                     'id' => 'id',
                     'title' => 'title',
                     'published' => $date->format(DATE_ATOM),
-                    'content' => new ArrayCollection([
+                    'content' => [
                         [
                             'type' => 'paragraph',
                             'text' => 'text',
                         ],
-                    ]),
+                    ],
                 ],
             ],
             'complete snippet' => [
@@ -137,9 +137,9 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                     'title' => 'title',
                     'published' => $date->format(DATE_ATOM),
                     'impactStatement' => 'impact statement',
-                    'subjects' => new ArrayCollection([
+                    'subjects' => [
                         'id',
-                    ]),
+                    ],
                 ],
             ],
             'minimum snippet' => [

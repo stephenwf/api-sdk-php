@@ -4,6 +4,7 @@ namespace test\eLife\ApiSdk;
 
 use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Client\AnnualReports;
+use eLife\ApiSdk\Client\Articles;
 use eLife\ApiSdk\Client\BlogArticles;
 use eLife\ApiSdk\Client\Events;
 use eLife\ApiSdk\Client\Interviews;
@@ -11,6 +12,7 @@ use eLife\ApiSdk\Client\LabsExperiments;
 use eLife\ApiSdk\Client\MediumArticles;
 use eLife\ApiSdk\Client\Subjects;
 use eLife\ApiSdk\Model\Block;
+use eLife\ApiSdk\Model\Reference;
 
 final class ApiSdkTest extends ApiTestCase
 {
@@ -37,6 +39,19 @@ final class ApiSdkTest extends ApiTestCase
         $this->mockAnnualReportCall(2012);
 
         $this->apiSdk->getSerializer()->normalize($this->apiSdk->annualReports()->get(2012)->wait());
+    }
+
+    /**
+     * @test
+     */
+    public function it_creates_articles()
+    {
+        $this->assertInstanceOf(Articles::class, $this->apiSdk->articles());
+
+        $this->mockArticleCall(7, true, true);
+        $this->mockSubjectCall(1);
+
+        $this->apiSdk->getSerializer()->normalize($this->apiSdk->articles()->get('article7')->wait());
     }
 
     /**
@@ -156,6 +171,34 @@ final class ApiSdkTest extends ApiTestCase
             [Block\Table::class],
             [Block\Video::class],
             [Block\YouTube::class],
+        ];
+    }
+
+    /**
+     * @test
+     * @dataProvider denormalizeReferencesProvider
+     */
+    public function it_can_denormalize_references(string $reference)
+    {
+        $this->apiSdk->getSerializer()->supportsDenormalization([], $reference);
+    }
+
+    public function denormalizeReferencesProvider() : array
+    {
+        return [
+            [Reference\BookReference::class],
+            [Reference\BookChapterReference::class],
+            [Reference\ClinicalTrialReference::class],
+            [Reference\ConferenceProceedingReference::class],
+            [Reference\DataReference::class],
+            [Reference\JournalReference::class],
+            [Reference\PatentReference::class],
+            [Reference\PeriodicalReference::class],
+            [Reference\PreprintReference::class],
+            [Reference\ReportReference::class],
+            [Reference\SoftwareReference::class],
+            [Reference\ThesisReference::class],
+            [Reference\WebReference::class],
         ];
     }
 }

@@ -27,8 +27,10 @@ final class ArticleVoR extends ArticleVersion
         string $type,
         string $doi,
         string $authorLine,
+        string $titlePrefix = null,
         string $title,
         DateTimeImmutable $published,
+        DateTimeImmutable $statusDate,
         int $volume,
         string $elocationId,
         string $pdf = null,
@@ -48,8 +50,8 @@ final class ArticleVoR extends ArticleVersion
         Collection $decisionLetterDescription,
         PromiseInterface $authorResponse
     ) {
-        parent::__construct($id, $version, $type, $doi, $authorLine, $title, $published, $volume, $elocationId, $pdf,
-            $subjects, $researchOrganisms, $abstract, $issue, $copyright, $authors);
+        parent::__construct($id, $version, $type, $doi, $authorLine, $titlePrefix, $title, $published, $statusDate,
+            $volume, $elocationId, $pdf, $subjects, $researchOrganisms, $abstract, $issue, $copyright, $authors);
 
         $this->impactStatement = $impactStatement;
         $this->image = $image;

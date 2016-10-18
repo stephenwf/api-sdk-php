@@ -72,9 +72,14 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
             'authorLine' => $object->getAuthorLine(),
             'title' => $object->getTitle(),
             'published' => $object->getPublishedDate()->format(DATE_ATOM),
+            'statusDate' => $object->getStatusDate()->format(DATE_ATOM),
             'volume' => $object->getVolume(),
             'elocationId' => $object->getElocationId(),
         ];
+
+        if ($object->getTitlePrefix()) {
+            $data['titlePrefix'] = $object->getTitlePrefix();
+        }
 
         if ($object->getPdf()) {
             $data['pdf'] = $object->getPdf();

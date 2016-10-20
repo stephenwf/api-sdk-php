@@ -11,7 +11,6 @@ use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
 use eLife\ApiSdk\Collection\Sequence;
 use eLife\ApiSdk\Model\Interview;
-use eLife\ApiSdk\Promise\CallbackPromise;
 use eLife\ApiSdk\SlicedIterator;
 use GuzzleHttp\Promise\PromiseInterface;
 use Iterator;
@@ -82,38 +81,12 @@ final class Interviews implements Iterator, Sequence
             ->then(function (Result $result) {
                 $interviews = [];
 
-                $fullPromise = new CallbackPromise(function () use ($result) {
-                    $promises = [];
-                    foreach ($result['items'] as $interview) {
-                        $promises[$interview['id']] = $this->interviewsClient->getInterview(
-                            ['Accept' => new MediaType(InterviewsClient::TYPE_INTERVIEW, 1)],
-                            $interview['id']
-                        );
-                    }
-
-                    return $promises;
-                });
-
                 foreach ($result['items'] as $interview) {
                     if (isset($this->interviews[$interview['id']])) {
                         $interviews[] = $this->interviews[$interview['id']]->wait();
                     } else {
-                        $interview['interviewee']['cv'] = $fullPromise
-                            ->then(function (array $promises) use ($interview) {
-                                $fullInterview = $promises[$interview['id']]->wait();
-
-                                if (empty($fullInterview['interviewee']['cv'])) {
-                                    return [];
-                                }
-
-                                return $fullInterview['interviewee']['cv'];
-                            });
-                        $interview['content'] = $fullPromise
-                            ->then(function (array $promises) use ($interview) {
-                                return $promises[$interview['id']]->wait()['content'];
-                            });
-
-                        $interviews[] = $interview = $this->denormalizer->denormalize($interview, Interview::class);
+                        $interviews[] = $interview = $this->denormalizer->denormalize($interview, Interview::class,
+                            null, ['snippet' => true]);
                         $this->interviews[$interview->getId()] = promise_for($interview);
                     }
                 }

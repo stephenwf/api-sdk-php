@@ -111,8 +111,12 @@ abstract class ApiTestCase extends TestCase
         array $subjects = [],
         bool $vor = false
     ) {
-        $articles = array_map(function (int $id) {
-            return $this->createArticleVoRJson($id, true);
+        $articles = array_map(function (int $id) use ($vor) {
+            if ($vor) {
+                return $this->createArticleVoRJson($id, true);
+            }
+
+            return $this->createArticlePoAJson($id, true);
         }, $this->generateIdList($page, $perPage, $total));
 
         $subjectsQuery = implode('', array_map(function (string $subjectId) {
@@ -136,19 +140,19 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockArticleCall(int $number, bool $subject = false, bool $vor = false)
+    final protected function mockArticleCall(int $number, bool $complete = false, bool $vor = false)
     {
         if ($vor) {
             $response = new Response(
                 200,
                 ['Content-Type' => new MediaType(ArticlesClient::TYPE_ARTICLE_VOR, 1)],
-                json_encode($this->createArticleVoRJson($number, false, $subject))
+                json_encode($this->createArticleVoRJson($number, false, $complete))
             );
         } else {
             $response = new Response(
                 200,
                 ['Content-Type' => new MediaType(ArticlesClient::TYPE_ARTICLE_POA, 1)],
-                json_encode($this->createArticlePoAJson($number, false, $subject))
+                json_encode($this->createArticlePoAJson($number, false, $complete))
             );
         }
 
@@ -199,7 +203,7 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockBlogArticleCall(int $number, bool $subject = false)
+    final protected function mockBlogArticleCall(int $number, bool $complete = false)
     {
         $this->storage->save(
             new Request(
@@ -210,7 +214,7 @@ abstract class ApiTestCase extends TestCase
             new Response(
                 200,
                 ['Content-Type' => new MediaType(BlogClient::TYPE_BLOG_ARTICLE, 1)],
-                json_encode($this->createBlogArticleJson($number, false, $subject))
+                json_encode($this->createBlogArticleJson($number, false, $complete))
             )
         );
     }
@@ -243,7 +247,7 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockEventCall(int $number, bool $venue = false)
+    final protected function mockEventCall(int $number, bool $complete = false)
     {
         $this->storage->save(
             new Request(
@@ -254,7 +258,7 @@ abstract class ApiTestCase extends TestCase
             new Response(
                 200,
                 ['Content-Type' => new MediaType(EventsClient::TYPE_EVENT, 1)],
-                json_encode($this->createEventJson($number, false, $venue))
+                json_encode($this->createEventJson($number, false, $complete))
             )
         );
     }
@@ -282,7 +286,7 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockInterviewCall(int $number)
+    final protected function mockInterviewCall(int $number, bool $complete = false)
     {
         $this->storage->save(
             new Request(
@@ -293,7 +297,7 @@ abstract class ApiTestCase extends TestCase
             new Response(
                 200,
                 ['Content-Type' => new MediaType(InterviewsClient::TYPE_INTERVIEW, 1)],
-                json_encode($this->createInterviewJson($number, false))
+                json_encode($this->createInterviewJson($number, false, $complete))
             )
         );
     }
@@ -321,7 +325,7 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockLabsExperimentCall(int $number)
+    final protected function mockLabsExperimentCall(int $number, bool $complete = false)
     {
         $this->storage->save(
             new Request(
@@ -332,7 +336,7 @@ abstract class ApiTestCase extends TestCase
             new Response(
                 200,
                 ['Content-Type' => new MediaType(LabsClient::TYPE_EXPERIMENT, 1)],
-                json_encode($this->createLabsExperimentJson($number, false))
+                json_encode($this->createLabsExperimentJson($number, false, $complete))
             )
         );
     }
@@ -406,7 +410,12 @@ abstract class ApiTestCase extends TestCase
             throw new LogicException('Page should not exist');
         }
 
-        return range($firstId, $firstId + $perPage - 1);
+        $lastId = $firstId + $perPage - 1;
+        if ($lastId > $total) {
+            $lastId = $total;
+        }
+
+        return range($firstId, $lastId);
     }
 
     final private function createAnnualReportJson(int $year)
@@ -436,7 +445,7 @@ abstract class ApiTestCase extends TestCase
         ];
     }
 
-    private function createArticlePoAJson(int $number, bool $isSnippet = false, bool $subject = false) : array
+    private function createArticlePoAJson(int $number, bool $isSnippet = false, bool $complete = false) : array
     {
         $article = [
             'status' => 'poa',
@@ -445,14 +454,19 @@ abstract class ApiTestCase extends TestCase
             'type' => 'research-article',
             'doi' => '10.7554/eLife.'.$number,
             'title' => 'Article '.$number.' title',
+            'titlePrefix' => 'Article '.$number.' title prefix',
             'published' => '2000-01-01T00:00:00+00:00',
             'statusDate' => '1999-12-31T00:00:00+00:00',
             'volume' => 1,
+            'issue' => 1,
             'elocationId' => 'e'.$number,
+            'pdf' => 'http://www.example.com/',
+            'subjects' => [$this->createSubjectJson(1, true)],
+            'researchOrganisms' => ['Article '.$number.' research organism'],
             'copyright' => [
                 'license' => 'CC-BY-4.0',
                 'holder' => 'Author et al',
-                'statement' => 'This article is distributed under the terms of the <a href=\'http://creativecommons.org/licenses/by/4.0/\'>Creative Commons Attribution License</a> permitting unrestricted use and redistribution provided that the original author and source are credited.',
+                'statement' => 'Statement',
             ],
             'authorLine' => 'Author et al',
             'authors' => [
@@ -461,50 +475,76 @@ abstract class ApiTestCase extends TestCase
                     'name' => [
                         'preferred' => 'Author',
                         'index' => 'Author',
+                    ],
+                ],
+            ],
+            'abstract' => [
+                'content' => [
+                    [
+                        'type' => 'paragraph',
+                        'text' => 'Article '.$number.' abstract text',
                     ],
                 ],
             ],
         ];
 
-        if ($subject) {
-            $article['subjects'][] = ['id' => 'subject1', 'name' => 'Subject 1 name'];
+        if (!$complete) {
+            unset($article['titlePrefix']);
+            unset($article['issue']);
+            unset($article['pdf']);
+            unset($article['subjects']);
+            unset($article['researchOrganisms']);
+            unset($article['abstract']);
         }
 
         if ($isSnippet) {
+            unset($article['issue']);
             unset($article['copyright']);
             unset($article['authors']);
+            unset($article['abstract']);
         }
 
         return $article;
     }
 
-    private function createArticleVoRJson(int $number, bool $isSnippet = false, bool $subject = false) : array
+    private function createArticleVoRJson(int $number, bool $isSnippet = false, bool $complete = false) : array
     {
-        $article = [
-            'status' => 'vor',
-            'id' => 'article'.$number,
-            'version' => 1,
-            'type' => 'research-article',
-            'doi' => '10.7554/eLife.'.$number,
-            'title' => 'Article '.$number.' title',
-            'published' => '2000-01-01T00:00:00+00:00',
-            'statusDate' => '1999-12-31T00:00:00+00:00',
-            'volume' => 1,
-            'elocationId' => 'e'.$number,
-            'copyright' => [
-                'license' => 'CC-BY-4.0',
-                'holder' => 'Author et al',
-                'statement' => 'This article is distributed under the terms of the <a href=\'http://creativecommons.org/licenses/by/4.0/\'>Creative Commons Attribution License</a> permitting unrestricted use and redistribution provided that the original author and source are credited.',
-            ],
-            'authorLine' => 'Author et al',
-            'authors' => [
-                [
-                    'type' => 'person',
-                    'name' => [
-                        'preferred' => 'Author',
-                        'index' => 'Author',
+        $article = $this->createArticlePoAJson($number, $isSnippet, $complete);
+
+        $article['status'] = 'vor';
+
+        if (false === empty($article['abstract'])) {
+            $article['abstract']['doi'] = '10.7554/eLife.'.$number.'abstract';
+        }
+
+        $article += [
+            'impactStatement' => 'Article '.$number.' impact statement',
+            'image' => [
+                'alt' => '',
+                'sizes' => [
+                    '2:1' => [
+                        '900' => 'https://placehold.it/900x450',
+                        '1800' => 'https://placehold.it/1800x900',
+                    ],
+                    '16:9' => [
+                        '250' => 'https://placehold.it/250x141',
+                        '500' => 'https://placehold.it/500x281',
+                    ],
+                    '1:1' => [
+                        '70' => 'https://placehold.it/70x70',
+                        '140' => 'https://placehold.it/140x140',
                     ],
                 ],
+            ],
+            'keywords' => ['Article '.$number.' keyword'],
+            'digest' => [
+                'content' => [
+                    [
+                        'type' => 'paragraph',
+                        'text' => 'Article '.$number.' digest',
+                    ],
+                ],
+                'doi' => '10.7554/eLife.'.$number.'digest',
             ],
             'body' => [
                 [
@@ -519,29 +559,80 @@ abstract class ApiTestCase extends TestCase
                     ],
                 ],
             ],
+            'references' => [
+                [
+                    'id' => 'ref1',
+                    'type' => 'book',
+                    'date' => '2000',
+                    'authors' => [
+                        [
+                            'type' => 'person',
+                            'name' => [
+                                'preferred' => 'preferred name',
+                                'index' => 'index name',
+                            ],
+                        ],
+                    ],
+                    'bookTitle' => 'book title',
+                    'publisher' => [
+                        'name' => ['publisher'],
+                    ],
+                ],
+            ],
+            'decisionLetter' => [
+                'doi' => '10.7554/eLife.'.$number.'decisionLetter',
+                'description' => [
+                    [
+                        'type' => 'paragraph',
+                        'text' => 'Article '.$number.' decision letter description',
+                    ],
+                ],
+                'content' => [
+                    [
+                        'type' => 'paragraph',
+                        'text' => 'Article '.$number.' decision letter text',
+                    ],
+                ],
+            ],
+            'authorResponse' => [
+                'doi' => '10.7554/eLife.'.$number.'authorResponse',
+                'content' => [
+                    [
+                        'type' => 'paragraph',
+                        'text' => 'Article '.$number.' author response text',
+                    ],
+                ],
+            ],
         ];
 
-        if ($subject) {
-            $article['subjects'][] = ['id' => 'subject1', 'name' => 'Subject 1 name'];
+        if (!$complete) {
+            unset($article['impactStatement']);
+            unset($article['image']);
+            unset($article['keywords']);
+            unset($article['digest']);
+            unset($article['references']);
+            unset($article['decisionLetter']);
+            unset($article['authorResponse']);
         }
 
         if ($isSnippet) {
-            unset($article['copyright']);
-            unset($article['authors']);
-            unset($article['content']);
+            unset($article['keywords']);
+            unset($article['digest']);
+            unset($article['body']);
+            unset($article['references']);
+            unset($article['decisionLetter']);
+            unset($article['authorResponse']);
         }
 
         return $article;
     }
 
-    private function createBlogArticleJson(int $number, bool $isSnippet = false, bool $subject = false) : array
+    private function createBlogArticleJson(int $number, bool $isSnippet = false, bool $complete = false) : array
     {
         $blogArticle = [
             'id' => 'blogArticle'.$number,
             'title' => 'Blog article '.$number.' title',
-            'impactStatement' => 'Blog article '.$number.' impact statement',
             'published' => '2000-01-01T00:00:00+00:00',
-            'subjects' => [],
             'content' => [
                 [
                     'type' => 'paragraph',
@@ -550,8 +641,9 @@ abstract class ApiTestCase extends TestCase
             ],
         ];
 
-        if ($subject) {
-            $blogArticle['subjects'][] = ['id' => 'subject1', 'name' => 'Subject 1 name'];
+        if ($complete) {
+            $blogArticle['impactStatement'] = 'Blog article '.$number.' impact statement';
+            $blogArticle['subjects'][] = $this->createSubjectJson(1, true);
         }
 
         if ($isSnippet) {
@@ -561,7 +653,7 @@ abstract class ApiTestCase extends TestCase
         return $blogArticle;
     }
 
-    private function createEventJson(int $number, bool $isSnippet = false, bool $venue = false) : array
+    private function createEventJson(int $number, bool $isSnippet = false, bool $complete = false) : array
     {
         $event = [
             'id' => 'event'.$number,
@@ -577,9 +669,9 @@ abstract class ApiTestCase extends TestCase
             ],
         ];
 
-        if ($venue) {
+        if ($complete) {
             $event['timezone'] = 'Europe/London';
-            $event['venue'] = ['name' => 'venue'];
+            $event['venue'] = ['name' => ['venue']];
         }
 
         if ($isSnippet) {
@@ -590,7 +682,7 @@ abstract class ApiTestCase extends TestCase
         return $event;
     }
 
-    private function createInterviewJson(int $number, bool $isSnippet = false) : array
+    private function createInterviewJson(int $number, bool $isSnippet = false, bool $complete = false) : array
     {
         $interview = [
             'id' => 'interview'.$number,
@@ -620,12 +712,18 @@ abstract class ApiTestCase extends TestCase
 
         if ($isSnippet) {
             unset($interview['content']);
+            unset($interview['interviewee']['cv']);
+        }
+
+        if (!$complete) {
+            unset($interview['impactStatement']);
+            unset($interview['interviewee']['cv']);
         }
 
         return $interview;
     }
 
-    private function createLabsExperimentJson(int $number, bool $isSnippet = false) : array
+    private function createLabsExperimentJson(int $number, bool $isSnippet = false, bool $complete = false) : array
     {
         $labsExperiment = [
             'number' => $number,
@@ -661,6 +759,10 @@ abstract class ApiTestCase extends TestCase
             unset($labsExperiment['content']);
         }
 
+        if (!$complete) {
+            unset($labsExperiment['impactStatement']);
+        }
+
         return $labsExperiment;
     }
 
@@ -691,9 +793,9 @@ abstract class ApiTestCase extends TestCase
         ];
     }
 
-    final private function createSubjectJson(int $number)
+    final private function createSubjectJson(int $number, bool $isSnippet = false) : array
     {
-        return [
+        $subject = [
             'id' => 'subject'.$number,
             'name' => 'Subject '.$number.' name',
             'impactStatement' => 'Subject '.$number.' impact statement',
@@ -715,5 +817,12 @@ abstract class ApiTestCase extends TestCase
                 ],
             ],
         ];
+
+        if ($isSnippet) {
+            unset($subject['impactStatement']);
+            unset($subject['image']);
+        }
+
+        return $subject;
     }
 }

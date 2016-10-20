@@ -43,6 +43,12 @@ use Symfony\Component\Serializer\Serializer;
 final class ApiSdk
 {
     private $httpClient;
+    private $articlesClient;
+    private $blogClient;
+    private $eventsClient;
+    private $interviewsClient;
+    private $labsClient;
+    private $subjectsClient;
     private $serializer;
     private $annualReports;
     private $articles;
@@ -56,24 +62,30 @@ final class ApiSdk
     public function __construct(HttpClient $httpClient)
     {
         $this->httpClient = $httpClient;
+        $this->articlesClient = new ArticlesClient($this->httpClient);
+        $this->blogClient = new BlogClient($this->httpClient);
+        $this->eventsClient = new EventsClient($this->httpClient);
+        $this->interviewsClient = new InterviewsClient($this->httpClient);
+        $this->labsClient = new LabsClient($this->httpClient);
+        $this->subjectsClient = new SubjectsClient($this->httpClient);
 
         $this->serializer = new Serializer([
             new AddressNormalizer(),
             new AnnualReportNormalizer(),
-            $articlePoANormalizer = new ArticlePoANormalizer(),
-            $articleVoRNormalizer = new ArticleVoRNormalizer(),
-            $blogArticleNormalizer = new BlogArticleNormalizer(),
-            new EventNormalizer(),
+            new ArticlePoANormalizer($this->articlesClient),
+            new ArticleVoRNormalizer($this->articlesClient),
+            new BlogArticleNormalizer($this->blogClient),
+            new EventNormalizer($this->eventsClient),
             new GroupAuthorNormalizer(),
             new ImageNormalizer(),
-            new InterviewNormalizer(),
-            new LabsExperimentNormalizer(),
+            new InterviewNormalizer($this->interviewsClient),
+            new LabsExperimentNormalizer($this->labsClient),
             new MediumArticleNormalizer(),
             new OnBehalfOfAuthorNormalizer(),
             new PersonAuthorNormalizer(),
             new PersonNormalizer(),
             new PlaceNormalizer(),
-            new SubjectNormalizer(),
+            new SubjectNormalizer($this->subjectsClient),
             new Block\BoxNormalizer(),
             new Block\FileNormalizer(),
             new Block\ImageNormalizer(),
@@ -101,12 +113,6 @@ final class ApiSdk
             new Reference\ThesisReferenceNormalizer(),
             new Reference\WebReferenceNormalizer(),
         ], [new JsonEncoder()]);
-
-        $this->subjects = new Subjects(new SubjectsClient($this->httpClient), $this->serializer);
-
-        $articlePoANormalizer->setSubjects($this->subjects);
-        $articleVoRNormalizer->setSubjects($this->subjects);
-        $blogArticleNormalizer->setSubjects($this->subjects);
     }
 
     public function annualReports() : AnnualReports
@@ -121,7 +127,7 @@ final class ApiSdk
     public function articles() : Articles
     {
         if (empty($this->articles)) {
-            $this->articles = new Articles(new ArticlesClient($this->httpClient), $this->serializer);
+            $this->articles = new Articles($this->articlesClient, $this->serializer);
         }
 
         return $this->articles;
@@ -130,7 +136,7 @@ final class ApiSdk
     public function blogArticles() : BlogArticles
     {
         if (empty($this->blogArticles)) {
-            $this->blogArticles = new BlogArticles(new BlogClient($this->httpClient), $this->serializer);
+            $this->blogArticles = new BlogArticles($this->blogClient, $this->serializer);
         }
 
         return $this->blogArticles;
@@ -139,7 +145,7 @@ final class ApiSdk
     public function events() : Events
     {
         if (empty($this->events)) {
-            $this->events = new Events(new EventsClient($this->httpClient), $this->serializer);
+            $this->events = new Events($this->eventsClient, $this->serializer);
         }
 
         return $this->events;
@@ -148,7 +154,7 @@ final class ApiSdk
     public function interviews() : Interviews
     {
         if (empty($this->interviews)) {
-            $this->interviews = new Interviews(new InterviewsClient($this->httpClient), $this->serializer);
+            $this->interviews = new Interviews($this->interviewsClient, $this->serializer);
         }
 
         return $this->interviews;
@@ -157,7 +163,7 @@ final class ApiSdk
     public function labsExperiments() : LabsExperiments
     {
         if (empty($this->labsExperiments)) {
-            $this->labsExperiments = new LabsExperiments(new LabsClient($this->httpClient), $this->serializer);
+            $this->labsExperiments = new LabsExperiments($this->labsClient, $this->serializer);
         }
 
         return $this->labsExperiments;
@@ -174,6 +180,10 @@ final class ApiSdk
 
     public function subjects() : Subjects
     {
+        if (empty($this->subjects)) {
+            $this->subjects = new Subjects($this->subjectsClient, $this->serializer);
+        }
+
         return $this->subjects;
     }
 

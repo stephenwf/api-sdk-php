@@ -3,8 +3,8 @@
 namespace test\eLife\ApiSdk\Serializer;
 
 use DateTimeImmutable;
-use eLife\ApiClient\ApiClient\SubjectsClient;
-use eLife\ApiSdk\Client\Subjects;
+use eLife\ApiClient\ApiClient\BlogClient;
+use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
 use eLife\ApiSdk\Model\Block\Paragraph;
@@ -12,14 +12,11 @@ use eLife\ApiSdk\Model\BlogArticle;
 use eLife\ApiSdk\Model\Image;
 use eLife\ApiSdk\Model\ImageSize;
 use eLife\ApiSdk\Model\Subject;
-use eLife\ApiSdk\Serializer\Block;
 use eLife\ApiSdk\Serializer\BlogArticleNormalizer;
-use eLife\ApiSdk\Serializer\ImageNormalizer;
-use eLife\ApiSdk\Serializer\SubjectNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Serializer;
 use test\eLife\ApiSdk\ApiTestCase;
+use function GuzzleHttp\Promise\promise_for;
 use function GuzzleHttp\Promise\rejection_for;
 
 final class BlogArticleNormalizerTest extends ApiTestCase
@@ -32,15 +29,10 @@ final class BlogArticleNormalizerTest extends ApiTestCase
      */
     protected function setUpNormalizer()
     {
-        $this->normalizer = new BlogArticleNormalizer();
-
-        $serializer = new Serializer([
-            $this->normalizer,
-            new ImageNormalizer(),
-            new SubjectNormalizer(),
-            new Block\ParagraphNormalizer(),
-        ]);
-        $this->normalizer->setSubjects(new Subjects(new SubjectsClient($this->getHttpClient()), $serializer));
+        $apiSdk = new ApiSdk($this->getHttpClient());
+        $this->normalizer = new BlogArticleNormalizer(new BlogClient($this->getHttpClient()));
+        $this->normalizer->setNormalizer($apiSdk->getSerializer());
+        $this->normalizer->setDenormalizer($apiSdk->getSerializer());
     }
 
     /**
@@ -110,25 +102,23 @@ final class BlogArticleNormalizerTest extends ApiTestCase
 
     /**
      * @test
-     * @dataProvider denormalizeProvider
+     * @dataProvider normalizeProvider
      */
-    public function it_denormalize_blog_articles(BlogArticle $expected, array $context, array $json)
-    {
+    public function it_denormalize_blog_articles(
+        BlogArticle $expected,
+        array $context,
+        array $json,
+        callable $extra = null
+    ) {
+        if ($extra) {
+            call_user_func($extra, $this);
+        }
+
         $actual = $this->normalizer->denormalize($json, BlogArticle::class, null, $context);
 
         $this->mockSubjectCall(1);
 
         $this->assertObjectsAreEqual($expected, $actual);
-    }
-
-    public function denormalizeProvider() : array
-    {
-        $data = $this->normalizeProvider();
-
-        unset($data['complete snippet']);
-        unset($data['minimum snippet']);
-
-        return $data;
     }
 
     public function normalizeProvider() : array
@@ -145,7 +135,8 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                 '140' => 'https://placehold.it/140x140',
             ]),
         ]);
-        $subject = new Subject('subject1', 'Subject 1 name', 'Subject 1 impact statement', $image);
+        $subject = new Subject('subject1', 'Subject 1 name', promise_for('Subject 1 impact statement'),
+            promise_for($image));
 
         return [
             'complete' => [
@@ -185,30 +176,34 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                 ],
             ],
             'complete snippet' => [
-                new BlogArticle('id', 'title', $date, 'impact statement',
-                    new PromiseSequence(rejection_for('Full blog article should not be unwrapped')),
-                    new ArraySequence([$subject])),
+                new BlogArticle('blogArticle1', 'Blog article 1 title', $date, 'Blog article 1 impact statement',
+                    new ArraySequence([new Paragraph('Blog article 1 text')]), new ArraySequence([$subject])),
                 ['snippet' => true],
                 [
-                    'id' => 'id',
-                    'title' => 'title',
+                    'id' => 'blogArticle1',
+                    'title' => 'Blog article 1 title',
                     'published' => $date->format(DATE_ATOM),
-                    'impactStatement' => 'impact statement',
+                    'impactStatement' => 'Blog article 1 impact statement',
                     'subjects' => [
                         ['id' => 'subject1', 'name' => 'Subject 1 name'],
                     ],
                 ],
+                function (ApiTestCase $test) {
+                    $test->mockBlogArticleCall(1, true);
+                },
             ],
             'minimum snippet' => [
-                new BlogArticle('id', 'title', $date, null,
-                    new PromiseSequence(rejection_for('Full blog article should not be unwrapped')),
-                    new ArraySequence([])),
+                new BlogArticle('blogArticle1', 'Blog article 1 title', $date, null,
+                    new ArraySequence([new Paragraph('Blog article 1 text')]), new ArraySequence([])),
                 ['snippet' => true],
                 [
-                    'id' => 'id',
-                    'title' => 'title',
+                    'id' => 'blogArticle1',
+                    'title' => 'Blog article 1 title',
                     'published' => $date->format(DATE_ATOM),
                 ],
+                function (ApiTestCase $test) {
+                    $test->mockBlogArticleCall(1);
+                },
             ],
         ];
     }

@@ -10,6 +10,7 @@ use eLife\ApiSdk\Collection\PromiseSequence;
 use eLife\ApiSdk\Model\ArticlePoA;
 use eLife\ApiSdk\Model\ArticleSection;
 use eLife\ApiSdk\Model\Block\Paragraph;
+use eLife\ApiSdk\Model\Collection;
 use eLife\ApiSdk\Model\Copyright;
 use eLife\ApiSdk\Model\Image;
 use eLife\ApiSdk\Model\ImageSize;
@@ -23,6 +24,7 @@ use eLife\ApiSdk\Serializer\PodcastEpisodeNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use test\eLife\ApiSdk\ApiTestCase;
+use test\eLife\ApiSdk\Builder;
 use function GuzzleHttp\Promise\promise_for;
 use function GuzzleHttp\Promise\rejection_for;
 
@@ -124,8 +126,8 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
 
         $actual = $this->normalizer->denormalize($json, PodcastEpisode::class, null, $context);
 
-        $this->mockSubjectCall(1);
-        $this->mockArticleCall(1, !empty($context['complete']));
+        $this->mockSubjectCall('1');
+        $this->mockArticleCall('1', !empty($context['complete']));
 
         $this->assertObjectsAreEqual($expected, $actual);
     }
@@ -145,7 +147,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                 '140' => 'https://placehold.it/140x140',
             ]),
         ]);
-        $subject = new Subject('subject1', 'Subject 1 name', promise_for('Subject 1 impact statement'),
+        $subject = new Subject('1', 'Subject 1 name', promise_for('Subject 1 impact statement'),
             promise_for($banner), promise_for($thumbnail));
 
         return [
@@ -156,7 +158,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                     new ArraySequence([]), new ArraySequence([
                         new PodcastEpisodeChapter(1, 'Chapter 1 title', 0, 'Chapter impact statement',
                             new ArraySequence([
-                                new ArticlePoA('article1', 1, 'research-article', '10.7554/eLife.1', 'Author et al',
+                                new ArticlePoA('1', 1, 'research-article', '10.7554/eLife.1', 'Author et al',
                                     'Article 1 title prefix', 'Article 1 title',
                                     new DateTimeImmutable('2000-01-01T00:00:00+00:00'),
                                     new DateTimeImmutable('1999-12-31T00:00:00+00:00'), 1, 'e1',
@@ -166,6 +168,8 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                                     promise_for(1),
                                     promise_for(new Copyright('CC-BY-4.0', 'Statement', 'Author et al')),
                                     new ArraySequence([new PersonAuthor(new PersonDetails('Author', 'Author'))])),
+                                Builder::for(Collection::class)
+                                    ->sample('tropical-disease'),
                             ])),
                     ])),
                 ['complete' => true],
@@ -210,7 +214,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                             'time' => 0,
                             'content' => [
                                 [
-                                    'id' => 'article1',
+                                    'id' => '1',
                                     'version' => 1,
                                     'type' => 'research-article',
                                     'doi' => '10.7554/eLife.1',
@@ -223,10 +227,39 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                                     'titlePrefix' => 'Article 1 title prefix',
                                     'pdf' => 'http://www.example.com/',
                                     'subjects' => [
-                                        ['id' => 'subject1', 'name' => 'Subject 1 name'],
+                                        ['id' => '1', 'name' => 'Subject 1 name'],
                                     ],
                                     'researchOrganisms' => ['Article 1 research organism'],
                                     'status' => 'poa',
+                                ],
+                                [
+                                    'id' => 'tropical-disease',
+                                    'type' => 'collection',
+                                    'title' => 'Tropical disease',
+                                    'updated' => '2000-01-01T00:00:00+00:00',
+                                    'image' => [
+                                        'thumbnail' => [
+                                            'alt' => '',
+                                            'sizes' => [
+                                                '16:9' => [
+                                                    250 => 'https://placehold.it/250x141',
+                                                    500 => 'https://placehold.it/500x281',
+                                                ],
+                                                '1:1' => [
+                                                    70 => 'https://placehold.it/70x70',
+                                                    140 => 'https://placehold.it/140x140',
+                                                ],
+                                            ],
+                                        ],
+                                    ],
+                                    'selectedCurator' => [
+                                        'id' => 'pjha',
+                                        'name' => [
+                                            'preferred' => 'Prabhat Jha',
+                                            'index' => 'Jha, Prabhat',
+                                        ],
+                                        'type' => 'senior-editor',
+                                    ],
                                 ],
                             ],
                             'impactStatement' => 'Chapter impact statement',
@@ -234,13 +267,20 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                     ],
                     'impactStatement' => 'Podcast episode 1 impact statement',
                 ],
+                function ($test) {
+                    $test->mockCollectionCall('tropical-disease', false);
+                    $test->mockPersonCall('pjha', false);
+                    $test->mockPersonCall('bcooper', false);
+                    $test->mockBlogArticleCall('359325', false);
+                    $test->mockSubjectCall('biophysics-structural-biology');
+                },
             ],
             'minimum' => [
                 new PodcastEpisode(1, 'Podcast episode 1 title', null, $date, promise_for($banner), $thumbnail,
                     [new PodcastEpisodeSource('audio/mpeg', 'https://www.example.com/episode.mp3')],
                     new ArraySequence([]), new ArraySequence([
                         new PodcastEpisodeChapter(1, 'Chapter title', 0, null, new ArraySequence([
-                            new ArticlePoA('article1', 1, 'research-article', '10.7554/eLife.1', 'Author et al', null,
+                            new ArticlePoA('1', 1, 'research-article', '10.7554/eLife.1', 'Author et al', null,
                                 'Article 1 title', new DateTimeImmutable('2000-01-01T00:00:00+00:00'),
                                 new DateTimeImmutable('1999-12-31T00:00:00+00:00'), 1, 'e1', null,
                                 new ArraySequence([]), [], promise_for(null), promise_for(null),
@@ -290,7 +330,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                             'time' => 0,
                             'content' => [
                                 [
-                                    'id' => 'article1',
+                                    'id' => '1',
                                     'version' => 1,
                                     'type' => 'research-article',
                                     'doi' => '10.7554/eLife.1',
@@ -313,7 +353,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                     [new PodcastEpisodeSource('audio/mpeg', 'https://www.example.com/episode.mp3')],
                     new ArraySequence([]), new ArraySequence([
                         new PodcastEpisodeChapter(1, 'Chapter title', 0, 'Chapter impact statement', new ArraySequence([
-                            new ArticlePoA('article1', 1, 'research-article', '10.7554/eLife.1', 'Author et al',
+                            new ArticlePoA('1', 1, 'research-article', '10.7554/eLife.1', 'Author et al',
                                 'Article 1 title prefix', 'Article 1 title',
                                 new DateTimeImmutable('2000-01-01T00:00:00+00:00'),
                                 new DateTimeImmutable('1999-12-31T00:00:00+00:00'), 1, 'e1', 'http://www.example.com/',
@@ -360,7 +400,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                     [new PodcastEpisodeSource('audio/mpeg', 'https://www.example.com/episode.mp3')],
                     new ArraySequence([]), new ArraySequence([
                         new PodcastEpisodeChapter(1, 'Chapter title', 0, null, new ArraySequence([
-                            new ArticlePoA('article1', 1, 'research-article', '10.7554/eLife.1', 'Author et al', null,
+                            new ArticlePoA('1', 1, 'research-article', '10.7554/eLife.1', 'Author et al', null,
                                 'Article 1 title', new DateTimeImmutable('2000-01-01T00:00:00+00:00'),
                                 new DateTimeImmutable('1999-12-31T00:00:00+00:00'), 1, 'e1', null,
                                 new ArraySequence([]), [], promise_for(null), promise_for(null),

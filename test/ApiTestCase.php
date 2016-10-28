@@ -6,6 +6,7 @@ use Csa\Bundle\GuzzleBundle\GuzzleHttp\Middleware\MockMiddleware;
 use eLife\ApiClient\ApiClient\AnnualReportsClient;
 use eLife\ApiClient\ApiClient\ArticlesClient;
 use eLife\ApiClient\ApiClient\BlogClient;
+use eLife\ApiClient\ApiClient\CollectionsClient;
 use eLife\ApiClient\ApiClient\EventsClient;
 use eLife\ApiClient\ApiClient\InterviewsClient;
 use eLife\ApiClient\ApiClient\LabsClient;
@@ -115,10 +116,10 @@ abstract class ApiTestCase extends TestCase
     ) {
         $articles = array_map(function (int $id) use ($vor) {
             if ($vor) {
-                return $this->createArticleVoRJson($id, true);
+                return $this->createArticleVoRJson('article'.$id, true);
             }
 
-            return $this->createArticlePoAJson($id, true);
+            return $this->createArticlePoAJson('article'.$id, true);
         }, $this->generateIdList($page, $perPage, $total));
 
         $subjectsQuery = implode('', array_map(function (string $subjectId) {
@@ -142,26 +143,31 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockArticleCall(int $number, bool $complete = false, bool $vor = false)
+    final protected function mockArticleCall($numberOrId, bool $complete = false, bool $vor = false)
     {
+        if (is_integer($numberOrId)) {
+            $id = "article{$numberOrId}";
+        } else {
+            $id = (string) $numberOrId;
+        }
         if ($vor) {
             $response = new Response(
                 200,
                 ['Content-Type' => new MediaType(ArticlesClient::TYPE_ARTICLE_VOR, 1)],
-                json_encode($this->createArticleVoRJson($number, false, $complete))
+                json_encode($this->createArticleVoRJson($id, false, $complete))
             );
         } else {
             $response = new Response(
                 200,
                 ['Content-Type' => new MediaType(ArticlesClient::TYPE_ARTICLE_POA, 1)],
-                json_encode($this->createArticlePoAJson($number, false, $complete))
+                json_encode($this->createArticlePoAJson($id, false, $complete))
             );
         }
 
         $this->storage->save(
             new Request(
                 'GET',
-                'http://api.elifesciences.org/articles/article'.$number,
+                'http://api.elifesciences.org/articles/'.$id,
                 [
                     'Accept' => [
                         new MediaType(ArticlesClient::TYPE_ARTICLE_POA, 1),
@@ -181,7 +187,7 @@ abstract class ApiTestCase extends TestCase
         array $subjects = []
     ) {
         $blogArticles = array_map(function (int $id) {
-            return $this->createBlogArticleJson($id, true);
+            return $this->createBlogArticleJson('blogArticle'.$id, true);
         }, $this->generateIdList($page, $perPage, $total));
 
         $subjectsQuery = implode('', array_map(function (string $subjectId) {
@@ -205,18 +211,23 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockBlogArticleCall(int $number, bool $complete = false)
+    final protected function mockBlogArticleCall($numberOrId, bool $complete = false)
     {
+        if (is_integer($numberOrId)) {
+            $id = "blogArticle{$numberOrId}";
+        } else {
+            $id = (string) $numberOrId;
+        }
         $this->storage->save(
             new Request(
                 'GET',
-                'http://api.elifesciences.org/blog-articles/blogArticle'.$number,
+                'http://api.elifesciences.org/blog-articles/'.$id,
                 ['Accept' => new MediaType(BlogClient::TYPE_BLOG_ARTICLE, 1)]
             ),
             new Response(
                 200,
                 ['Content-Type' => new MediaType(BlogClient::TYPE_BLOG_ARTICLE, 1)],
-                json_encode($this->createBlogArticleJson($number, false, $complete))
+                json_encode($this->createBlogArticleJson($id, false, $complete))
             )
         );
     }
@@ -268,7 +279,7 @@ abstract class ApiTestCase extends TestCase
     final protected function mockInterviewListCall(int $page, int $perPage, int $total, $descendingOrder = true)
     {
         $interviews = array_map(function (int $id) {
-            return $this->createInterviewJson($id, true);
+            return $this->createInterviewJson('interview'.$id, true);
         }, $this->generateIdList($page, $perPage, $total));
 
         $this->storage->save(
@@ -288,18 +299,26 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockInterviewCall(int $number, bool $complete = false)
+    /**
+     * @param string|int $numberOrId
+     */
+    final protected function mockInterviewCall($numberOrId, bool $complete = false)
     {
+        if (is_integer($numberOrId)) {
+            $id = "interview{$numberOrId}";
+        } else {
+            $id = (string) $numberOrId;
+        }
         $this->storage->save(
             new Request(
                 'GET',
-                'http://api.elifesciences.org/interviews/interview'.$number,
+                'http://api.elifesciences.org/interviews/'.$id,
                 ['Accept' => new MediaType(InterviewsClient::TYPE_INTERVIEW, 1)]
             ),
             new Response(
                 200,
                 ['Content-Type' => new MediaType(InterviewsClient::TYPE_INTERVIEW, 1)],
-                json_encode($this->createInterviewJson($number, false, $complete))
+                json_encode($this->createInterviewJson($id, false, $complete))
             )
         );
     }
@@ -375,7 +394,7 @@ abstract class ApiTestCase extends TestCase
         string $type = null
     ) {
         $people = array_map(function (int $id) {
-            return $this->createPersonJson($id, true);
+            return $this->createPersonJson('person'.$id, true);
         }, $this->generateIdList($page, $perPage, $total));
 
         $subjectsQuery = implode('', array_map(function (string $subjectId) {
@@ -405,18 +424,26 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockPersonCall(int $number, bool $complete = false)
+    /**
+     * @param string|int $numberOrId
+     */
+    final protected function mockPersonCall($numberOrId, bool $complete = false, bool $isSnippet = false)
     {
+        if (is_integer($numberOrId)) {
+            $id = "person{$numberOrId}";
+        } else {
+            $id = (string) $numberOrId;
+        }
         $this->storage->save(
             new Request(
                 'GET',
-                'http://api.elifesciences.org/people/person'.$number,
+                'http://api.elifesciences.org/people/'.$id,
                 ['Accept' => new MediaType(PeopleClient::TYPE_PERSON, 1)]
             ),
             new Response(
                 200,
                 ['Content-Type' => new MediaType(PeopleClient::TYPE_PERSON, 1)],
-                json_encode($this->createPersonJson($number, false, $complete))
+                json_encode($this->createPersonJson($id, $isSnippet, $complete))
             )
         );
     }
@@ -469,10 +496,58 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
+    final protected function mockCollectionListCall(
+        int $page,
+        int $perPage,
+        int $total,
+        $descendingOrder = true,
+        array $subjects = []
+    ) {
+        $collections = array_map(function (int $id) {
+            return $this->createCollectionJson($id, true);
+        }, $this->generateIdList($page, $perPage, $total));
+
+        $subjectsQuery = implode('', array_map(function (string $subjectId) {
+            return '&subject[]='.$subjectId;
+        }, $subjects));
+
+        $this->storage->save(
+            new Request(
+                'GET',
+                'http://api.elifesciences.org/collections?page='.$page.'&per-page='.$perPage.'&order='.($descendingOrder ? 'desc' : 'asc').$subjectsQuery,
+                ['Accept' => new MediaType(CollectionsClient::TYPE_COLLECTION_LIST, 1)]
+            ),
+            new Response(
+                200,
+                ['Content-Type' => new MediaType(CollectionsClient::TYPE_COLLECTION_LIST, 1)],
+                json_encode([
+                    'total' => $total,
+                    'items' => $collections,
+                ])
+            )
+        );
+    }
+
+    final protected function mockCollectionCall(string $id, bool $complete = true)
+    {
+        $this->storage->save(
+            new Request(
+                'GET',
+                'http://api.elifesciences.org/collections/'.$id,
+                ['Accept' => new MediaType(CollectionsClient::TYPE_COLLECTION, 1)]
+            ),
+            new Response(
+                200,
+                ['Content-Type' => new MediaType(CollectionsClient::TYPE_COLLECTION, 1)],
+                json_encode($this->createCollectionJson($id, false, $complete))
+            )
+        );
+    }
+
     final protected function mockSubjectListCall(int $page, int $perPage, int $total, $descendingOrder = true)
     {
         $subjects = array_map(function (int $id) {
-            return $this->createSubjectJson($id);
+            return $this->createSubjectJson('subject'.$id);
         }, $this->generateIdList($page, $perPage, $total));
 
         $this->storage->save(
@@ -492,18 +567,23 @@ abstract class ApiTestCase extends TestCase
         );
     }
 
-    final protected function mockSubjectCall(int $number)
+    final protected function mockSubjectCall($numberOrId)
     {
+        if (is_integer($numberOrId)) {
+            $id = "subject{$numberOrId}";
+        } else {
+            $id = (string) $numberOrId;
+        }
         $this->storage->save(
             new Request(
                 'GET',
-                'http://api.elifesciences.org/subjects/subject'.$number,
+                'http://api.elifesciences.org/subjects/'.$id,
                 ['Accept' => new MediaType(SubjectsClient::TYPE_SUBJECT, 1)]
             ),
             new Response(
                 200,
                 ['Content-Type' => new MediaType(SubjectsClient::TYPE_SUBJECT, 1)],
-                json_encode($this->createSubjectJson($number))
+                json_encode($this->createSubjectJson($id))
             )
         );
     }
@@ -546,24 +626,24 @@ abstract class ApiTestCase extends TestCase
         ];
     }
 
-    private function createArticlePoAJson(int $number, bool $isSnippet = false, bool $complete = false) : array
+    private function createArticlePoAJson(string $id, bool $isSnippet = false, bool $complete = false) : array
     {
         $article = [
             'status' => 'poa',
-            'id' => 'article'.$number,
+            'id' => $id,
             'version' => 1,
             'type' => 'research-article',
-            'doi' => '10.7554/eLife.'.$number,
-            'title' => 'Article '.$number.' title',
-            'titlePrefix' => 'Article '.$number.' title prefix',
+            'doi' => '10.7554/eLife.'.$id,
+            'title' => 'Article '.$id.' title',
+            'titlePrefix' => 'Article '.$id.' title prefix',
             'published' => '2000-01-01T00:00:00+00:00',
             'statusDate' => '1999-12-31T00:00:00+00:00',
             'volume' => 1,
             'issue' => 1,
-            'elocationId' => 'e'.$number,
+            'elocationId' => 'e'.$id,
             'pdf' => 'http://www.example.com/',
-            'subjects' => [$this->createSubjectJson(1, true)],
-            'researchOrganisms' => ['Article '.$number.' research organism'],
+            'subjects' => [$this->createSubjectJson('1', true)],
+            'researchOrganisms' => ['Article '.$id.' research organism'],
             'copyright' => [
                 'license' => 'CC-BY-4.0',
                 'holder' => 'Author et al',
@@ -583,7 +663,7 @@ abstract class ApiTestCase extends TestCase
                 'content' => [
                     [
                         'type' => 'paragraph',
-                        'text' => 'Article '.$number.' abstract text',
+                        'text' => 'Article '.$id.' abstract text',
                     ],
                 ],
             ],
@@ -608,18 +688,18 @@ abstract class ApiTestCase extends TestCase
         return $article;
     }
 
-    private function createArticleVoRJson(int $number, bool $isSnippet = false, bool $complete = false) : array
+    private function createArticleVoRJson(string $id, bool $isSnippet = false, bool $complete = false) : array
     {
-        $article = $this->createArticlePoAJson($number, $isSnippet, $complete);
+        $article = $this->createArticlePoAJson($id, $isSnippet, $complete);
 
         $article['status'] = 'vor';
 
         if (false === empty($article['abstract'])) {
-            $article['abstract']['doi'] = '10.7554/eLife.'.$number.'abstract';
+            $article['abstract']['doi'] = '10.7554/eLife.'.$id.'abstract';
         }
 
         $article += [
-            'impactStatement' => 'Article '.$number.' impact statement',
+            'impactStatement' => 'Article '.$id.' impact statement',
             'image' => [
                 'banner' => [
                     'alt' => '',
@@ -644,25 +724,25 @@ abstract class ApiTestCase extends TestCase
                     ],
                 ],
             ],
-            'keywords' => ['Article '.$number.' keyword'],
+            'keywords' => ['Article '.$id.' keyword'],
             'digest' => [
                 'content' => [
                     [
                         'type' => 'paragraph',
-                        'text' => 'Article '.$number.' digest',
+                        'text' => 'Article '.$id.' digest',
                     ],
                 ],
-                'doi' => '10.7554/eLife.'.$number.'digest',
+                'doi' => '10.7554/eLife.'.$id.'digest',
             ],
             'body' => [
                 [
                     'type' => 'section',
-                    'title' => 'Article '.$number.' section title',
-                    'id' => 'article'.$number.'section',
+                    'title' => 'Article '.$id.' section title',
+                    'id' => 'article'.$id.'section',
                     'content' => [
                         [
                             'type' => 'paragraph',
-                            'text' => 'Article '.$number.' text',
+                            'text' => 'Article '.$id.' text',
                         ],
                     ],
                 ],
@@ -688,26 +768,26 @@ abstract class ApiTestCase extends TestCase
                 ],
             ],
             'decisionLetter' => [
-                'doi' => '10.7554/eLife.'.$number.'decisionLetter',
+                'doi' => '10.7554/eLife.'.$id.'decisionLetter',
                 'description' => [
                     [
                         'type' => 'paragraph',
-                        'text' => 'Article '.$number.' decision letter description',
+                        'text' => 'Article '.$id.' decision letter description',
                     ],
                 ],
                 'content' => [
                     [
                         'type' => 'paragraph',
-                        'text' => 'Article '.$number.' decision letter text',
+                        'text' => 'Article '.$id.' decision letter text',
                     ],
                 ],
             ],
             'authorResponse' => [
-                'doi' => '10.7554/eLife.'.$number.'authorResponse',
+                'doi' => '10.7554/eLife.'.$id.'authorResponse',
                 'content' => [
                     [
                         'type' => 'paragraph',
-                        'text' => 'Article '.$number.' author response text',
+                        'text' => 'Article '.$id.' author response text',
                     ],
                 ],
             ],
@@ -738,22 +818,22 @@ abstract class ApiTestCase extends TestCase
         return $article;
     }
 
-    private function createBlogArticleJson(int $number, bool $isSnippet = false, bool $complete = false) : array
+    private function createBlogArticleJson(string $id, bool $isSnippet = false, bool $complete = false) : array
     {
         $blogArticle = [
-            'id' => 'blogArticle'.$number,
-            'title' => 'Blog article '.$number.' title',
+            'id' => $id,
+            'title' => 'Blog article '.$id.' title',
             'published' => '2000-01-01T00:00:00+00:00',
             'content' => [
                 [
                     'type' => 'paragraph',
-                    'text' => 'Blog article '.$number.' text',
+                    'text' => 'Blog article '.$id.' text',
                 ],
             ],
         ];
 
         if ($complete) {
-            $blogArticle['impactStatement'] = 'Blog article '.$number.' impact statement';
+            $blogArticle['impactStatement'] = 'Blog article '.$id.' impact statement';
             $blogArticle['subjects'][] = $this->createSubjectJson(1, true);
         }
 
@@ -793,10 +873,10 @@ abstract class ApiTestCase extends TestCase
         return $event;
     }
 
-    private function createInterviewJson(int $number, bool $isSnippet = false, bool $complete = false) : array
+    private function createInterviewJson(string $id, bool $isSnippet = false, bool $complete = false) : array
     {
         $interview = [
-            'id' => 'interview'.$number,
+            'id' => $id,
             'interviewee' => [
                 'name' => [
                     'preferred' => 'preferred name',
@@ -810,13 +890,13 @@ abstract class ApiTestCase extends TestCase
                     ],
                 ],
             ],
-            'title' => 'Interview '.$number.' title',
-            'impactStatement' => 'Interview '.$number.' impact statement',
+            'title' => 'Interview '.$id.' title',
+            'impactStatement' => 'Interview '.$id.' impact statement',
             'published' => '2000-01-01T00:00:00+00:00',
             'content' => [
                 [
                     'type' => 'paragraph',
-                    'text' => 'Interview '.$number.' text',
+                    'text' => 'Interview '.$id.' text',
                 ],
             ],
         ];
@@ -908,14 +988,14 @@ abstract class ApiTestCase extends TestCase
         ];
     }
 
-    private function createPersonJson(int $number, bool $isSnippet = false, bool $complete = false) : array
+    private function createPersonJson(string $id, bool $isSnippet = false, bool $complete = false) : array
     {
         $person = [
-            'id' => 'person'.$number,
+            'id' => $id,
             'type' => 'senior-editor',
             'name' => [
-                'preferred' => 'Person '.$number.' preferred',
-                'index' => 'Person '.$number.' index',
+                'preferred' => $id.' preferred',
+                'index' => $id.' index',
             ],
             'orcid' => '0000-0002-1825-0097',
             'research' => [
@@ -935,10 +1015,10 @@ abstract class ApiTestCase extends TestCase
             'profile' => [
                 [
                     'type' => 'paragraph',
-                    'text' => 'Person '.$number.' profile text',
+                    'text' => $id.' profile text',
                 ],
             ],
-            'competingInterests' => 'Person '.$number.' competing interests',
+            'competingInterests' => $id.' competing interests',
             'image' => [
                 'alt' => '',
                 'sizes' => [
@@ -1015,7 +1095,7 @@ abstract class ApiTestCase extends TestCase
                     'title' => 'Chapter title',
                     'time' => 0,
                     'impactStatement' => 'Chapter impact statement',
-                    'content' => [$this->createArticlePoAJson(1, true, $complete)],
+                    'content' => [$this->createArticlePoAJson('1', true, $complete)],
                 ],
             ],
         ];
@@ -1034,12 +1114,153 @@ abstract class ApiTestCase extends TestCase
         return $podcastEpisode;
     }
 
-    final private function createSubjectJson(int $number, bool $isSnippet = false) : array
+    private function createCollectionJson(string $id, bool $isSnippet = false, bool $complete = false) : array
+    {
+        $collection = [
+            'id' => $id,
+            'title' => ucfirst($id),
+            'subTitle' => ucfirst($id).' subtitle',
+            'impactStatement' => ucfirst($id).' impact statement',
+            'updated' => '2000-01-01T00:00:00+00:00',
+            'image' => [
+                'banner' => [
+                    'alt' => '',
+                    'sizes' => [
+                        '2:1' => [
+                            '900' => 'https://placehold.it/900x450',
+                            '1800' => 'https://placehold.it/1800x900',
+                        ],
+                    ],
+                ],
+                'thumbnail' => [
+                    'alt' => '',
+                    'sizes' => [
+                        '16:9' => [
+                            '250' => 'https://placehold.it/250x141',
+                            '500' => 'https://placehold.it/500x281',
+                        ],
+                        '1:1' => [
+                            '70' => 'https://placehold.it/70x70',
+                            '140' => 'https://placehold.it/140x140',
+                        ],
+                    ],
+                ],
+            ],
+            'selectedCurator' => [
+                'id' => 'pjha',
+                'type' => 'senior-editor',
+                'name' => [
+                    'preferred' => 'Prabhat Jha',
+                    'index' => 'Jha, Prabhat',
+                ],
+                'etAl' => true,
+            ],
+            'curators' => [
+                [
+                    'id' => 'bcooper',
+                    'type' => 'reviewing-editor',
+                    'name' => [
+                        'preferred' => 'Ben Cooper',
+                        'index' => 'Cooper, Ben',
+                    ],
+                ],
+                [
+                    'id' => 'pjha',
+                    'type' => 'senior-editor',
+                    'name' => [
+                        'preferred' => 'Prabhat Jha',
+                        'index' => 'Jha, Prabhat',
+                    ],
+                ],
+            ],
+            'content' => [
+                [
+                    'type' => 'blog-article',
+                    'id' => '359325',
+                    'title' => 'Media coverage: Slime can see',
+                    'impactStatement' => 'In their research paper – Cyanobacteria use micro-optics to sense light direction – Schuergers et al. reveal how bacterial cells act as the equivalent of a microscopic eyeball or the world’s oldest and smallest camera eye, allowing them to ‘see’.',
+                    'published' => '2016-07-08T08:33:25+00:00',
+                    'subjects' => [
+                        [
+                            'id' => 'biophysics-structural-biology',
+                            'name' => 'Biophysics and Structural Biology',
+                        ],
+                    ],
+                ],
+            ],
+            'relatedContent' => [
+                [
+                    'type' => 'research-article',
+                    'status' => 'poa',
+                    'id' => '14107',
+                    'version' => 1,
+                    'doi' => '10.7554/eLife.14107',
+                    'authorLine' => 'Yongjian Huang et al',
+                    'title' => 'Molecular basis for multimerization in the activation of the epidermal growth factor',
+                    'published' => '2016-03-28T00:00:00+00:00',
+                    'statusDate' => '2016-03-28T00:00:00+00:00',
+                    'volume' => 5,
+                    'elocationId' => 'e14107',
+                ],
+            ],
+            'podcastEpisodes' => [
+                $podcastEpisode = [
+                    'number' => 29,
+                    'title' => 'April/May 2016',
+                    'published' => '2016-05-27T13:19:42+00:00',
+                    'image' => [
+                        'thumbnail' => [
+                            'alt' => '',
+                            'sizes' => [
+                                '16:9' => [
+                                    '250' => 'https://placehold.it/250x141',
+                                    '500' => 'https://placehold.it/500x281',
+                                ],
+                                '1:1' => [
+                                    '70' => 'https://placehold.it/70x70',
+                                    '140' => 'https://placehold.it/140x140',
+                                ],
+                            ],
+                        ],
+                    ],
+                    'sources' => [
+                        [
+                            'mediaType' => 'audio/mpeg',
+                            'uri' => 'https://nakeddiscovery.com/scripts/mp3s/audio/eLife_Podcast_16.05.mp3',
+                        ],
+                    ],
+                ],
+            ],
+            'subjects' => [$this->createSubjectJson(1, true)],
+        ];
+
+        if (!$complete) {
+            unset($collection['impactStatement']);
+            unset($collection['selectedCurator']['etAl']);
+            unset($collection['subTitle']);
+            unset($collection['relatedContent']);
+            unset($collection['podcastEpisodes']);
+            unset($collection['subjects']);
+        }
+
+        if ($isSnippet) {
+            unset($collection['image']['banner']);
+            unset($collection['subTitle']);
+            unset($collection['curators']);
+            unset($collection['content']);
+            unset($collection['relatedContent']);
+            unset($collection['podcastEpisodes']);
+        }
+
+        return $collection;
+    }
+
+    final private function createSubjectJson(string $id, bool $isSnippet = false) : array
     {
         $subject = [
-            'id' => 'subject'.$number,
-            'name' => 'Subject '.$number.' name',
-            'impactStatement' => 'Subject '.$number.' impact statement',
+            'id' => $id,
+            'name' => 'Subject '.$id.' name',
+            'impactStatement' => 'Subject '.$id.' impact statement',
             'image' => [
                 'banner' => [
                     'alt' => '',

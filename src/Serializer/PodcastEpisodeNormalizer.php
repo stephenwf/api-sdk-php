@@ -8,8 +8,7 @@ use eLife\ApiClient\MediaType;
 use eLife\ApiClient\Result;
 use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
-use eLife\ApiSdk\Model\ArticlePoA;
-use eLife\ApiSdk\Model\ArticleVoR;
+use eLife\ApiSdk\Model\Collection;
 use eLife\ApiSdk\Model\Image;
 use eLife\ApiSdk\Model\PodcastEpisode;
 use eLife\ApiSdk\Model\PodcastEpisodeChapter;
@@ -66,29 +65,13 @@ final class PodcastEpisodeNormalizer implements NormalizerInterface, Denormalize
                     $chapter['impactStatement'] ?? null,
                     new ArraySequence(array_map(function (array $item) use ($format, $context) {
                         $context['snippet'] = true;
+                        if ($item['type'] == 'collection') {
+                            return $this->denormalizer->denormalize($item, Collection::class, $format, $context);
+                        } else {
+                            $class = ArticleVersionNormalizer::articleClass($item['type'], $item['status']);
 
-                        switch ($item['type']) {
-                            case 'correction':
-                            case 'editorial':
-                            case 'feature':
-                            case 'insight':
-                            case 'research-advance':
-                            case 'research-article':
-                            case 'research-exchange':
-                            case 'retraction':
-                            case 'registered-report':
-                            case 'replication-study':
-                            case 'short-report':
-                            case 'tools-resources':
-                                if ('poa' === $item['status']) {
-                                    $class = ArticlePoA::class;
-                                } else {
-                                    $class = ArticleVoR::class;
-                                }
-                                break;
+                            return $this->denormalizer->denormalize($item, $class, $format, $context);
                         }
-
-                        return $this->denormalizer->denormalize($item, $class, $format, $context);
                     }, $chapter['content'])));
             });
 
@@ -203,7 +186,16 @@ final class PodcastEpisodeNormalizer implements NormalizerInterface, Denormalize
                     'content' => $chapter->getContent()->map(function ($item) use ($format, $context) {
                         $context['snippet'] = true;
 
-                        return $this->normalizer->normalize($item, $format, $context);
+                        $types = [
+                            Collection::class => 'collection',
+                        ];
+
+                        return array_merge(
+                            [
+                                'type' => $types[get_class($item)] ?? null,
+                            ],
+                            $this->normalizer->normalize($item, $format, $context)
+                        );
                     })->toArray(),
                 ];
 

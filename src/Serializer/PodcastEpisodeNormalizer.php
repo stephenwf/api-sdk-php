@@ -8,8 +8,8 @@ use eLife\ApiClient\MediaType;
 use eLife\ApiClient\Result;
 use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
-use eLife\ApiSdk\Model\Collection;
 use eLife\ApiSdk\Model\Image;
+use eLife\ApiSdk\Model\Model;
 use eLife\ApiSdk\Model\PodcastEpisode;
 use eLife\ApiSdk\Model\PodcastEpisodeChapter;
 use eLife\ApiSdk\Model\PodcastEpisodeSource;
@@ -65,13 +65,8 @@ final class PodcastEpisodeNormalizer implements NormalizerInterface, Denormalize
                     $chapter['impactStatement'] ?? null,
                     new ArraySequence(array_map(function (array $item) use ($format, $context) {
                         $context['snippet'] = true;
-                        if ($item['type'] == 'collection') {
-                            return $this->denormalizer->denormalize($item, Collection::class, $format, $context);
-                        } else {
-                            $class = ArticleVersionNormalizer::articleClass($item['type'], $item['status']);
 
-                            return $this->denormalizer->denormalize($item, $class, $format, $context);
-                        }
+                        return $this->denormalizer->denormalize($item, Model::class, $format, $context);
                     }, $chapter['content'])));
             });
 
@@ -139,7 +134,10 @@ final class PodcastEpisodeNormalizer implements NormalizerInterface, Denormalize
 
     public function supportsDenormalization($data, $type, $format = null) : bool
     {
-        return PodcastEpisode::class === $type;
+        return
+            PodcastEpisode::class === $type
+            ||
+            Model::class === $type && 'podcast-episode' === ($data['type'] ?? 'unknown');
     }
 
     /**
@@ -147,6 +145,8 @@ final class PodcastEpisodeNormalizer implements NormalizerInterface, Denormalize
      */
     public function normalize($object, $format = null, array $context = []) : array
     {
+        $normalizationHelper = new NormalizationHelper($this->normalizer, $this->denormalizer, $format);
+
         $data = [
             'number' => $object->getNumber(),
             'title' => $object->getTitle(),
@@ -159,6 +159,10 @@ final class PodcastEpisodeNormalizer implements NormalizerInterface, Denormalize
                 ];
             }, $object->getSources()),
         ];
+
+        if (!empty($context['type'])) {
+            $data['type'] = 'podcast-episode';
+        }
 
         if ($object->getImpactStatement()) {
             $data['impactStatement'] = $object->getImpactStatement();
@@ -177,26 +181,16 @@ final class PodcastEpisodeNormalizer implements NormalizerInterface, Denormalize
 
             $data['chapters'] = $object->getChapters()->map(function (PodcastEpisodeChapter $chapter) use (
                 $format,
-                $context
+                $context,
+                $normalizationHelper
             ) {
+                $typeContext = array_merge($context, ['type' => true]);
+
                 $data = [
                     'number' => $chapter->getNumber(),
                     'title' => $chapter->getTitle(),
                     'time' => $chapter->getTime(),
-                    'content' => $chapter->getContent()->map(function ($item) use ($format, $context) {
-                        $context['snippet'] = true;
-
-                        $types = [
-                            Collection::class => 'collection',
-                        ];
-
-                        return array_merge(
-                            [
-                                'type' => $types[get_class($item)] ?? null,
-                            ],
-                            $this->normalizer->normalize($item, $format, $context)
-                        );
-                    })->toArray(),
+                    'content' => $normalizationHelper->normalizeSequenceToSnippets($chapter->getContent(), $typeContext),
                 ];
 
                 if ($chapter->getImpactStatement()) {

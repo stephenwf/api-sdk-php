@@ -12,6 +12,7 @@ use eLife\ApiClient\ApiClient\LabsClient;
 use eLife\ApiClient\ApiClient\MediumClient;
 use eLife\ApiClient\ApiClient\PeopleClient;
 use eLife\ApiClient\ApiClient\PodcastClient;
+use eLife\ApiClient\ApiClient\SearchClient;
 use eLife\ApiClient\ApiClient\SubjectsClient;
 use eLife\ApiClient\HttpClient;
 use eLife\ApiSdk\Client\AnnualReports;
@@ -24,6 +25,7 @@ use eLife\ApiSdk\Client\LabsExperiments;
 use eLife\ApiSdk\Client\MediumArticles;
 use eLife\ApiSdk\Client\People;
 use eLife\ApiSdk\Client\PodcastEpisodes;
+use eLife\ApiSdk\Client\Search;
 use eLife\ApiSdk\Client\Subjects;
 use eLife\ApiSdk\Serializer\AddressNormalizer;
 use eLife\ApiSdk\Serializer\AnnualReportNormalizer;
@@ -45,6 +47,7 @@ use eLife\ApiSdk\Serializer\PersonNormalizer;
 use eLife\ApiSdk\Serializer\PlaceNormalizer;
 use eLife\ApiSdk\Serializer\PodcastEpisodeNormalizer;
 use eLife\ApiSdk\Serializer\Reference;
+use eLife\ApiSdk\Serializer\SearchSubjectsNormalizer;
 use eLife\ApiSdk\Serializer\SubjectNormalizer;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
@@ -59,6 +62,8 @@ final class ApiSdk
     private $labsClient;
     private $peopleClient;
     private $podcastClient;
+    private $collectionsClient;
+    private $searchClient;
     private $subjectsClient;
     private $serializer;
     private $annualReports;
@@ -70,6 +75,8 @@ final class ApiSdk
     private $mediumArticles;
     private $people;
     private $podcastEpisodes;
+    private $collections;
+    private $search;
     private $subjects;
 
     public function __construct(HttpClient $httpClient)
@@ -83,6 +90,7 @@ final class ApiSdk
         $this->labsClient = new LabsClient($this->httpClient);
         $this->peopleClient = new PeopleClient($this->httpClient);
         $this->podcastClient = new PodcastClient($this->httpClient);
+        $this->searchClient = new SearchClient($this->httpClient);
         $this->subjectsClient = new SubjectsClient($this->httpClient);
 
         $this->serializer = new Serializer([
@@ -104,6 +112,7 @@ final class ApiSdk
             new PersonNormalizer($this->peopleClient),
             new PlaceNormalizer(),
             new PodcastEpisodeNormalizer($this->podcastClient),
+            new SearchSubjectsNormalizer(),
             new SubjectNormalizer($this->subjectsClient),
             new Block\BoxNormalizer(),
             new Block\FileNormalizer(),
@@ -231,6 +240,15 @@ final class ApiSdk
         }
 
         return $this->subjects;
+    }
+
+    public function search() : Search
+    {
+        if (empty($this->search)) {
+            $this->search = new Search($this->searchClient, $this->serializer);
+        }
+
+        return $this->search;
     }
 
     public function getSerializer() : Serializer

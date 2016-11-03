@@ -13,6 +13,7 @@ use eLife\ApiClient\ApiClient\LabsClient;
 use eLife\ApiClient\ApiClient\MediumClient;
 use eLife\ApiClient\ApiClient\PeopleClient;
 use eLife\ApiClient\ApiClient\PodcastClient;
+use eLife\ApiClient\ApiClient\SearchClient;
 use eLife\ApiClient\ApiClient\SubjectsClient;
 use eLife\ApiClient\HttpClient;
 use eLife\ApiClient\HttpClient\Guzzle6HttpClient;
@@ -540,6 +541,77 @@ abstract class ApiTestCase extends TestCase
                 200,
                 ['Content-Type' => new MediaType(CollectionsClient::TYPE_COLLECTION, 1)],
                 json_encode($this->createCollectionJson($id, false, $complete))
+            )
+        );
+    }
+
+    final protected function mockSearchCall(
+        int $page = 1,
+        int $perPage = 100,
+        int $total = 100,
+        string $query = '',
+        $descendingOrder = true,
+        array $subjects = [],
+        array $types = [],
+        $sort = 'relevance'
+    ) {
+        $results = array_map(function (int $id) {
+            return $this->createSearchResultJson($id);
+        }, $this->generateIdList($page, $perPage, $total));
+
+        $subjectsQuery = implode('', array_map(function (string $subjectId) {
+            return '&subject[]='.$subjectId;
+        }, $subjects));
+
+        $typesQuery = implode('', array_map(function (string $type) {
+            return '&type[]='.$type;
+        }, $types));
+
+        $this->storage->save(
+            new Request(
+                'GET',
+                'http://api.elifesciences.org/search?for='.$query.'&page='.$page.'&per-page='.$perPage.'&sort='.$sort.'&order='.($descendingOrder ? 'desc' : 'asc').$subjectsQuery.$typesQuery,
+                ['Accept' => new MediaType(SearchClient::TYPE_SEARCH, 1)]
+            ),
+            new Response(
+                200,
+                ['Content-Type' => new MediaType(SearchClient::TYPE_SEARCH, 1)],
+                json_encode([
+                    'total' => $total,
+                    'items' => $results,
+                    'subjects' => [
+                        [
+                            'id' => 'subject1',
+                            'name' => 'Subject 1',
+                            'results' => $firstSubjectResult = round($total / 2),
+                        ],
+                        [
+                            'id' => 'subject2',
+                            'name' => 'Subject 2',
+                            'results' => $total - $firstSubjectResult,
+                        ],
+                    ],
+                    'types' => [
+                        'correction' => $firstTypeResult = round($total / 3),
+                        'editorial' => $secondTypeResult = round($total / 3),
+                        'feature' => $total - $firstTypeResult - $secondTypeResult,
+                        'insight' => 0,
+                        'research-advance' => 0,
+                        'research-article' => 0,
+                        'research-exchange' => 0,
+                        'retraction' => 0,
+                        'registered-report' => 0,
+                        'replication-study' => 0,
+                        'short-report' => 0,
+                        'tools-resources' => 0,
+                        'blog-article' => 0,
+                        'collection' => 0,
+                        'event' => 0,
+                        'interview' => 0,
+                        'labs-experiment' => 0,
+                        'podcast-episode' => 0,
+                    ],
+                ])
             )
         );
     }
@@ -1253,6 +1325,28 @@ abstract class ApiTestCase extends TestCase
         }
 
         return $collection;
+    }
+
+    private function createSearchResultJson(string $id) : array
+    {
+        $allowedModelFactories = [
+            'createArticlePoAJson' => 'research-article',
+            'createArticleVoRJson' => 'research-article',
+            'createBlogArticleJson' => 'blog-article',
+            'createCollectionJson' => 'collection',
+            'createEventJson' => 'event',
+            'createInterviewJson' => 'interview',
+            'createLabsExperimentJson' => 'labs-experiment',
+            'createPodcastEpisodeJson' => 'podcast-episode',
+        ];
+        $index = (((int) $id) - 1) % count($allowedModelFactories);
+        $selectedModelFactory = array_keys($allowedModelFactories)[$index];
+        $type = array_values($allowedModelFactories)[$index];
+
+        return array_merge(
+            $this->$selectedModelFactory($id, $isSnippet = true),
+            ['type' => $type]
+        );
     }
 
     final private function createSubjectJson(string $id, bool $isSnippet = false) : array

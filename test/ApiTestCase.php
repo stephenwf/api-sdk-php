@@ -857,6 +857,12 @@ abstract class ApiTestCase extends TestCase
                     ],
                 ],
             ],
+            'acknowledgements' => [
+                [
+                    'type' => 'paragraph',
+                    'text' => 'acknowledgements',
+                ],
+            ],
             'decisionLetter' => [
                 'doi' => '10.7554/eLife.'.$id.'decisionLetter',
                 'description' => [
@@ -889,6 +895,7 @@ abstract class ApiTestCase extends TestCase
             unset($article['keywords']);
             unset($article['digest']);
             unset($article['references']);
+            unset($article['acknowledgements']);
             unset($article['decisionLetter']);
             unset($article['authorResponse']);
         }
@@ -901,6 +908,7 @@ abstract class ApiTestCase extends TestCase
             unset($article['digest']);
             unset($article['body']);
             unset($article['references']);
+            unset($article['acknowledgements']);
             unset($article['decisionLetter']);
             unset($article['authorResponse']);
         }

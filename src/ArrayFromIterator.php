@@ -24,7 +24,7 @@ trait ArrayFromIterator
         return $this->all()->reduce($callback, $initial);
     }
 
-    final public function sort(callable $callback) : Sequence
+    final public function sort(callable $callback = null) : Sequence
     {
         return $this->all()->sort($callback);
     }

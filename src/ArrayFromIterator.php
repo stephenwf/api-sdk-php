@@ -6,7 +6,6 @@ use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
 use eLife\ApiSdk\Collection\Sequence;
 use GuzzleHttp\Promise\Promise;
-use GuzzleHttp\Promise\PromiseInterface;
 
 trait ArrayFromIterator
 {
@@ -20,7 +19,7 @@ trait ArrayFromIterator
         return $this->all()->filter($callback);
     }
 
-    final public function reduce(callable $callback, $initial = null) : PromiseInterface
+    final public function reduce(callable $callback, $initial = null)
     {
         return $this->all()->reduce($callback, $initial);
     }

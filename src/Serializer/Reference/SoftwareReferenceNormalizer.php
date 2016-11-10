@@ -24,6 +24,7 @@ final class SoftwareReferenceNormalizer implements NormalizerInterface, Denormal
         return new SoftwareReference(
             $data['id'],
             ReferenceDate::fromString($data['date']),
+            $data['discriminator'] ?? null,
             array_map(function (array $author) {
                 return $this->denormalizer->denormalize($author, AuthorEntry::class);
             }, $data['authors']),
@@ -61,6 +62,10 @@ final class SoftwareReferenceNormalizer implements NormalizerInterface, Denormal
 
         if ($object->authorsEtAl()) {
             $data['authorsEtAl'] = $object->authorsEtAl();
+        }
+
+        if ($object->getDiscriminator()) {
+            $data['discriminator'] = $object->getDiscriminator();
         }
 
         if ($object->getVersion()) {

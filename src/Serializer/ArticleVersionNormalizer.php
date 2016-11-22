@@ -149,7 +149,7 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
             return $this->denormalizer->denormalize($subject, Subject::class, $format, $context);
         }, $data['subjects'] ?? []));
 
-        return $this->denormalizeArticle($data, $complete, $format, $context);
+        return $this->denormalizeArticle($data, $complete, $class, $format, $context);
     }
 
     private function denormalizeSnippet(array $article) : PromiseInterface
@@ -290,15 +290,15 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
     abstract protected function denormalizeArticle(
         $data,
         PromiseInterface $article = null,
-        $class,
-        $format = null,
+        string $class,
+        string $format = null,
         array $context = []
     ) : ArticleVersion;
 
     abstract protected function normalizeArticle(
         ArticleVersion $article,
         array $data,
-        $format = null,
+        string $format = null,
         array $context = []
     ) : array;
 }

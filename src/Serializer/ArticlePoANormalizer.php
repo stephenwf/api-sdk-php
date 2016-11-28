@@ -37,7 +37,8 @@ final class ArticlePoANormalizer extends ArticleVersionNormalizer
             $data['issue'],
             $data['copyright'],
             $data['authors'],
-            $data['reviewers']
+            $data['reviewers'],
+            $data['relatedArticles'] ?? null
         );
     }
 

@@ -6,12 +6,14 @@ use eLife\ApiClient\Result;
 use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
 use eLife\ApiSdk\Model\Appendix;
+use eLife\ApiSdk\Model\ArticlePoA;
 use eLife\ApiSdk\Model\ArticleSection;
 use eLife\ApiSdk\Model\ArticleVersion;
 use eLife\ApiSdk\Model\ArticleVoR;
 use eLife\ApiSdk\Model\Author;
 use eLife\ApiSdk\Model\Block;
 use eLife\ApiSdk\Model\DataSet;
+use eLife\ApiSdk\Model\ExternalArticle;
 use eLife\ApiSdk\Model\File;
 use eLife\ApiSdk\Model\Funder;
 use eLife\ApiSdk\Model\Funding;
@@ -101,6 +103,7 @@ final class ArticleVoRNormalizer extends ArticleVersionNormalizer
                 ->then(function (Result $article) {
                     return $article['references'] ?? [];
                 }));
+
         } else {
             $data['acknowledgements'] = new ArraySequence($data['acknowledgements'] ?? []);
 
@@ -298,7 +301,8 @@ final class ArticleVoRNormalizer extends ArticleVersionNormalizer
             $data['funding'],
             $data['decisionLetter'],
             $decisionLetterDescription,
-            $data['authorResponse']
+            $data['authorResponse'],
+            $data['relatedArticles']
         );
     }
 

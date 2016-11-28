@@ -3,12 +3,14 @@
 namespace eLife\ApiSdk\Serializer;
 
 use DateTimeImmutable;
+use Closure;
 use eLife\ApiClient\ApiClient\ArticlesClient;
 use eLife\ApiClient\MediaType;
 use eLife\ApiClient\Result;
 use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
+use eLife\ApiSdk\Model\Article;
 use eLife\ApiSdk\Model\ArticlePoA;
 use eLife\ApiSdk\Model\ArticleSection;
 use eLife\ApiSdk\Model\ArticleVersion;
@@ -16,6 +18,7 @@ use eLife\ApiSdk\Model\ArticleVoR;
 use eLife\ApiSdk\Model\AuthorEntry;
 use eLife\ApiSdk\Model\Block;
 use eLife\ApiSdk\Model\Copyright;
+use eLife\ApiSdk\Model\ExternalArticle;
 use eLife\ApiSdk\Model\Reviewer;
 use eLife\ApiSdk\Model\Subject;
 use eLife\ApiSdk\Promise\CallbackPromise;
@@ -51,6 +54,8 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
     public static function articleClass(string $type, string $status = null)
     {
         switch ($type) {
+            case 'external-article':
+                return ExternalArticle::class;
             case 'correction':
             case 'editorial':
             case 'feature':
@@ -104,18 +109,25 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
                 ->then(function (Result $article) {
                     return $article['reviewers'] ?? [];
                 }));
+
+            $data['relatedArticles'] = new PromiseSequence($complete
+                ->then(function (Result $article) {
+                    return $article['relatedArticles'] ?? [];
+                }));
         } else {
             $complete = null;
 
             $data['abstract'] = promise_for($data['abstract'] ?? null);
 
-            $data['authors'] = new ArraySequence($data['authors']);
+            $data['authors'] = new ArraySequence($data['authors'] ?? []);
 
             $data['copyright'] = promise_for($data['copyright']);
 
             $data['issue'] = promise_for($data['issue'] ?? null);
 
             $data['reviewers'] = new ArraySequence($data['reviewers'] ?? []);
+
+            $data['relatedArticles'] = new ArraySequence($data['relatedArticles'] ?? []);
         }
 
         $data['abstract'] = $data['abstract']
@@ -154,6 +166,14 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
         $data['published'] = !empty($data['published']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['published']) : null;
         $data['versionDate'] = !empty($data['versionDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['versionDate']) : null;
         $data['statusDate'] = !empty($data['statusDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['statusDate']) : null;
+
+        $data['relatedArticles'] = $data['relatedArticles']
+            ->map(Closure::bind(function (array $article) use ($format, $context) {
+                // Get type.
+                $type = $this->articleClass($article['type'], $article['status'] ?? null);
+                // Denorm.
+                return $this->denormalizer->denormalize($article, $type, $format, $context);
+            }, $this));
 
         return $this->denormalizeArticle($data, $complete, $class, $format, $context);
     }
@@ -258,6 +278,12 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
             if ($object->getReviewers()->notEmpty()) {
                 $data['reviewers'] = $object->getReviewers()->map(function (Reviewer $reviewer) use ($format, $context) {
                     return $this->normalizer->normalize($reviewer, $format, $context);
+                })->toArray();
+            }
+
+            if ($object->getRelatedArticles()->notEmpty()) {
+                $data['relatedArticles'] = $object->getRelatedArticles()->map(function (Article $relatedArticle) use ($format, $context) {
+                    return $this->normalizer->normalize($relatedArticle, $format, $context);
                 })->toArray();
             }
 

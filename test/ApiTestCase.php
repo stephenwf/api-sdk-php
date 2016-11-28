@@ -852,6 +852,20 @@ abstract class ApiTestCase extends TestCase
                     ],
                 ],
             ],
+            'relatedArticles' => $isSnippet === false ? [
+                [
+                    'type' => 'external-article',
+                    'articleTitle' => 'Transcriptional amplification in tumor cells with elevated c-Myc',
+                    'journal' =>
+                        [
+                            'name' => ['Cell'],
+                        ],
+                    'authorLine' => 'C. Y. Lin et al',
+                    'uri' => 'https://doi.org/10.1016/j.cell.2012.08.026',
+                ],
+                $this->createArticlePoAJson('04999', true, false),
+                $this->createArticleVoRJson('04999', true, false),
+            ] : [],
         ];
 
         if (!$complete) {
@@ -866,6 +880,7 @@ abstract class ApiTestCase extends TestCase
             unset($article['researchOrganisms']);
             unset($article['reviewers']);
             unset($article['abstract']);
+            unset($article['relatedArticles']);
         }
 
         if ($isSnippet) {
@@ -874,6 +889,7 @@ abstract class ApiTestCase extends TestCase
             unset($article['authors']);
             unset($article['reviewers']);
             unset($article['abstract']);
+            unset($article['relatedArticles']);
         }
 
         return $article;

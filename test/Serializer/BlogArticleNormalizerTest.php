@@ -3,6 +3,7 @@
 namespace test\eLife\ApiSdk\Serializer;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use eLife\ApiClient\ApiClient\BlogClient;
 use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Collection\ArraySequence;
@@ -55,7 +56,7 @@ final class BlogArticleNormalizerTest extends ApiTestCase
 
     public function canNormalizeProvider() : array
     {
-        $blogArticle = new BlogArticle('id', 'title', new DateTimeImmutable(), null,
+        $blogArticle = new BlogArticle('id', 'title', new DateTimeImmutable('now', new DateTimeZone('Z')), null,
             new PromiseSequence(rejection_for('Full blog article should not be unwrapped')),
             new PromiseSequence(rejection_for('Subjects should not be unwrapped'))
         );
@@ -125,7 +126,7 @@ final class BlogArticleNormalizerTest extends ApiTestCase
 
     public function normalizeProvider() : array
     {
-        $date = new DateTimeImmutable();
+        $date = new DateTimeImmutable('now', new DateTimeZone('Z'));
         $banner = new Image('',
             [new ImageSize('2:1', [900 => 'https://placehold.it/900x450', 1800 => 'https://placehold.it/1800x900'])]);
         $thumbnail = new Image('', [
@@ -149,7 +150,7 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                 [
                     'id' => 'id',
                     'title' => 'title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'impactStatement' => 'impact statement',
                     'content' => [
                         [
@@ -169,7 +170,7 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                 [
                     'id' => 'id',
                     'title' => 'title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'content' => [
                         [
                             'type' => 'paragraph',
@@ -185,7 +186,7 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                 [
                     'id' => 'blog-article-1',
                     'title' => 'Blog article 1 title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'impactStatement' => 'Blog article 1 impact statement',
                     'subjects' => [
                         ['id' => 'subject1', 'name' => 'Subject 1 name'],
@@ -203,7 +204,7 @@ final class BlogArticleNormalizerTest extends ApiTestCase
                 [
                     'id' => 'blog-article-1',
                     'title' => 'Blog article 1 title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                 ],
                 function (ApiTestCase $test) {
                     $test->mockBlogArticleCall(1);

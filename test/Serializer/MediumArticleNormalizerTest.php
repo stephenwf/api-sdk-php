@@ -4,6 +4,7 @@ namespace test\eLife\ApiSdk\Serializer;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Model\Image;
 use eLife\ApiSdk\Model\ImageSize;
 use eLife\ApiSdk\Model\MediumArticle;
@@ -48,7 +49,7 @@ final class MediumArticleNormalizerTest extends TestCase
 
     public function canNormalizeProvider() : array
     {
-        $mediumArticle = new MediumArticle('id', 'name', null, new DateTimeImmutable());
+        $mediumArticle = new MediumArticle('id', 'name', null, new DateTimeImmutable('now', new DateTimeZone('Z')));
 
         return [
             'medium article' => [$mediumArticle, null, true],
@@ -104,7 +105,7 @@ final class MediumArticleNormalizerTest extends TestCase
 
     public function normalizeProvider() : array
     {
-        $date = (new DateTimeImmutable())->setTimezone(new DateTimeZone('UTC'));
+        $date = (new DateTimeImmutable('now', new DateTimeZone('Z')))->setTimezone(new DateTimeZone('Z'));
         $image = new Image('alt', [new ImageSize('2:1', [900 => 'https://placehold.it/900x450'])]);
 
         return [
@@ -113,7 +114,7 @@ final class MediumArticleNormalizerTest extends TestCase
                 [
                     'uri' => 'http://www.example.com/',
                     'title' => 'title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'impactStatement' => 'impact statement',
                     'image' => ['alt' => 'alt', 'sizes' => ['2:1' => [900 => 'https://placehold.it/900x450']]],
                 ],
@@ -123,7 +124,7 @@ final class MediumArticleNormalizerTest extends TestCase
                 [
                     'uri' => 'http://www.example.com/',
                     'title' => 'title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                 ],
             ],
         ];

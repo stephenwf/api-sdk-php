@@ -54,7 +54,7 @@ final class EventNormalizerTest extends ApiTestCase
 
     public function canNormalizeProvider() : array
     {
-        $event = new Event('id', 'title', null, new DateTimeImmutable(), new DateTimeImmutable(), null,
+        $event = new Event('id', 'title', null, new DateTimeImmutable('now', new DateTimeZone('Z')), new DateTimeImmutable('now', new DateTimeZone('Z')), null,
             new PromiseSequence(rejection_for('Event content should not be unwrapped')),
             rejection_for('Event venue should not be unwrapped'));
 
@@ -121,8 +121,8 @@ final class EventNormalizerTest extends ApiTestCase
 
     public function normalizeProvider() : array
     {
-        $starts = new DateTimeImmutable();
-        $ends = new DateTimeImmutable();
+        $starts = new DateTimeImmutable('now', new DateTimeZone('Z'));
+        $ends = new DateTimeImmutable('now', new DateTimeZone('Z'));
         $timezone = new DateTimeZone('Europe/London');
         $venue = new Place(null, null, ['venue']);
 
@@ -134,8 +134,8 @@ final class EventNormalizerTest extends ApiTestCase
                 [
                     'id' => 'id',
                     'title' => 'title',
-                    'starts' => $starts->format(DATE_ATOM),
-                    'ends' => $ends->format(DATE_ATOM),
+                    'starts' => $starts->format(ApiSdk::DATE_FORMAT),
+                    'ends' => $ends->format(ApiSdk::DATE_FORMAT),
                     'impactStatement' => 'impact statement',
                     'timezone' => $timezone->getName(),
                     'content' => [
@@ -154,8 +154,8 @@ final class EventNormalizerTest extends ApiTestCase
                 [
                     'id' => 'id',
                     'title' => 'title',
-                    'starts' => $starts->format(DATE_ATOM),
-                    'ends' => $ends->format(DATE_ATOM),
+                    'starts' => $starts->format(ApiSdk::DATE_FORMAT),
+                    'ends' => $ends->format(ApiSdk::DATE_FORMAT),
                     'content' => [
                         [
                             'type' => 'paragraph',
@@ -171,8 +171,8 @@ final class EventNormalizerTest extends ApiTestCase
                 [
                     'id' => 'event1',
                     'title' => 'Event 1 title',
-                    'starts' => $starts->format(DATE_ATOM),
-                    'ends' => $ends->format(DATE_ATOM),
+                    'starts' => $starts->format(ApiSdk::DATE_FORMAT),
+                    'ends' => $ends->format(ApiSdk::DATE_FORMAT),
                     'impactStatement' => 'Event 1 impact statement',
                     'timezone' => $timezone->getName(),
                     'type' => 'event',
@@ -188,8 +188,8 @@ final class EventNormalizerTest extends ApiTestCase
                 [
                     'id' => 'event1',
                     'title' => 'Event 1 title',
-                    'starts' => $starts->format(DATE_ATOM),
-                    'ends' => $ends->format(DATE_ATOM),
+                    'starts' => $starts->format(ApiSdk::DATE_FORMAT),
+                    'ends' => $ends->format(ApiSdk::DATE_FORMAT),
                 ],
                 function (ApiTestCase $test) {
                     $test->mockEventCall(1);

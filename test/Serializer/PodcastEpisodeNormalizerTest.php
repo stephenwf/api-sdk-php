@@ -3,6 +3,7 @@
 namespace test\eLife\ApiSdk\Serializer;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use eLife\ApiClient\ApiClient\PodcastClient;
 use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Collection\ArraySequence;
@@ -59,7 +60,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
 
     public function canNormalizeProvider() : array
     {
-        $podcastEpisode = new PodcastEpisode(1, 'title', null, new DateTimeImmutable(), rejection_for('No banner'),
+        $podcastEpisode = new PodcastEpisode(1, 'title', null, new DateTimeImmutable('now', new DateTimeZone('Z')), rejection_for('No banner'),
             new Image('', [900 => 'https://placehold.it/900x450']),
             [new PodcastEpisodeSource('audio/mpeg', 'https://www.example.com/episode.mp3')],
             new PromiseSequence(rejection_for('Subjects should not be unwrapped')),
@@ -133,7 +134,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
 
     public function normalizeProvider() : array
     {
-        $date = new DateTimeImmutable();
+        $date = new DateTimeImmutable('now', new DateTimeZone('Z'));
         $banner = new Image('',
             [new ImageSize('2:1', [900 => 'https://placehold.it/900x450', 1800 => 'https://placehold.it/1800x900'])]);
         $thumbnail = new Image('', [
@@ -172,7 +173,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                 [
                     'number' => 1,
                     'title' => 'Podcast episode 1 title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'image' => [
                         'thumbnail' => [
                             'alt' => '',
@@ -219,9 +220,9 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                                     'title' => 'Molecular basis for multimerization in the activation of the epidermal growth factor',
                                     'volume' => 5,
                                     'elocationId' => 'e14107',
-                                    'published' => '2016-03-28T00:00:00+00:00',
-                                    'versionDate' => '2016-03-28T00:00:00+00:00',
-                                    'statusDate' => '2016-03-28T00:00:00+00:00',
+                                    'published' => '2016-03-28T00:00:00Z',
+                                    'versionDate' => '2016-03-28T00:00:00Z',
+                                    'statusDate' => '2016-03-28T00:00:00Z',
                                     'titlePrefix' => 'title prefix',
                                     'pdf' => 'http://www.example.com/',
                                     'subjects' => [
@@ -234,7 +235,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                                     'id' => 'tropical-disease',
                                     'type' => 'collection',
                                     'title' => 'Tropical disease',
-                                    'updated' => '2000-01-01T00:00:00+00:00',
+                                    'updated' => '2000-01-01T00:00:00Z',
                                     'image' => [
                                         'thumbnail' => [
                                             'alt' => '',
@@ -301,7 +302,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                 [
                     'number' => 1,
                     'title' => 'Podcast episode 1 title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'image' => [
                         'thumbnail' => [
                             'alt' => '',
@@ -355,7 +356,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                     'number' => 1,
                     'title' => 'Podcast episode 1 title',
                     'impactStatement' => 'Podcast episode 1 impact statement',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'image' => [
                         'thumbnail' => [
                             'alt' => '',
@@ -393,7 +394,7 @@ final class PodcastEpisodeNormalizerTest extends ApiTestCase
                 [
                     'number' => 1,
                     'title' => 'Podcast episode 1 title',
-                    'published' => $date->format(DATE_ATOM),
+                    'published' => $date->format(ApiSdk::DATE_FORMAT),
                     'image' => [
                         'thumbnail' => [
                             'alt' => '',

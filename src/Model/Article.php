@@ -1,10 +1,7 @@
 <?php
 
-
 namespace eLife\ApiSdk\Model;
 
-
-interface Article
+interface Article extends Model
 {
-
 }

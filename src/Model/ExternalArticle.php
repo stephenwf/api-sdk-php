@@ -4,7 +4,6 @@ namespace eLife\ApiSdk\Model;
 
 final class ExternalArticle implements Model, Article
 {
-
     private $articleTitle;
     private $journal;
     private $authorLine;
@@ -37,6 +36,4 @@ final class ExternalArticle implements Model, Article
     {
         return $this->uri;
     }
-
-
 }

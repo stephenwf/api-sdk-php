@@ -1,21 +1,19 @@
 <?php
 
-
 namespace eLife\ApiSdk\Serializer;
 
-
+use eLife\ApiSdk\Model\Article;
 use eLife\ApiSdk\Model\ExternalArticle;
 use eLife\ApiSdk\Model\Place;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 final class ExternalArticleNormalizer implements NormalizerInterface, DenormalizerInterface, NormalizerAwareInterface, DenormalizerAwareInterface
 {
-
     use NormalizerAwareTrait;
     use DenormalizerAwareTrait;
 
@@ -31,7 +29,10 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
 
     public function supportsDenormalization($data, $type, $format = null)
     {
-        return ExternalArticle::class === $type;
+        return
+            ExternalArticle::class === $type ||
+            (Article::class === $type && 'external' === ($data['type'] ?? 'unknown'))
+        ;
     }
 
     public function supportsNormalization($data, $format = null) : bool
@@ -50,6 +51,7 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
             'authorLine' => $object->getAuthorLine(),
             'uri' => $object->getUri(),
         ];
+
         return $data;
     }
 
@@ -57,5 +59,4 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
     {
         return $this->denormalizer->denormalize($data['journal'], Place::class, $format, $context);
     }
-
 }

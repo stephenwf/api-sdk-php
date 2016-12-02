@@ -7,7 +7,7 @@ use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\Sequence;
 use GuzzleHttp\Promise\PromiseInterface;
 
-abstract class ArticleVersion implements Model, Article, HasDoi, HasId, HasSubjects
+abstract class ArticleVersion implements Article, HasDoi, HasId, HasSubjects
 {
     const STAGE_PREVIEW = 'preview';
     const STAGE_PUBLISHED = 'published';
@@ -60,7 +60,7 @@ abstract class ArticleVersion implements Model, Article, HasDoi, HasId, HasSubje
         PromiseInterface $copyright,
         Sequence $authors,
         Sequence $reviewers,
-        Sequence $relatedArticles = null
+        Sequence $relatedArticles
     ) {
         $this->id = $id;
         $this->stage = $stage;
@@ -228,8 +228,11 @@ abstract class ArticleVersion implements Model, Article, HasDoi, HasId, HasSubje
         return $this->reviewers;
     }
 
+    /**
+     * @return Sequence|Article[]
+     */
     final public function getRelatedArticles(): Sequence
     {
-        return $this->relatedArticles  === null ? new ArraySequence() : $this->relatedArticles;
+        return $this->relatedArticles === null ? new ArraySequence() : $this->relatedArticles;
     }
 }

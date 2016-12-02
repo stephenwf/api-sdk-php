@@ -3,7 +3,6 @@
 namespace eLife\ApiSdk\Serializer;
 
 use DateTimeImmutable;
-use Closure;
 use eLife\ApiClient\ApiClient\ArticlesClient;
 use eLife\ApiClient\MediaType;
 use eLife\ApiClient\Result;
@@ -119,7 +118,7 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
 
             $data['abstract'] = promise_for($data['abstract'] ?? null);
 
-            $data['authors'] = new ArraySequence($data['authors'] ?? []);
+            $data['authors'] = new ArraySequence($data['authors']);
 
             $data['copyright'] = promise_for($data['copyright']);
 
@@ -167,13 +166,15 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
         $data['versionDate'] = !empty($data['versionDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['versionDate']) : null;
         $data['statusDate'] = !empty($data['statusDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['statusDate']) : null;
 
-        $data['relatedArticles'] = $data['relatedArticles']
-            ->map(Closure::bind(function (array $article) use ($format, $context) {
-                // Get type.
-                $type = $this->articleClass($article['type'], $article['status'] ?? null);
-                // Denorm.
-                return $this->denormalizer->denormalize($article, $type, $format, $context);
-            }, $this));
+        //Article::class
+        $data['relatedArticles'] = $data['relatedArticles']->map(function ($article) use ($format, $context) {
+            return $this->denormalizer->denormalize(
+                $article,
+                Article::class,
+                $format,
+                $context + ['snippet' => true]
+            );
+        });
 
         return $this->denormalizeArticle($data, $complete, $class, $format, $context);
     }
@@ -219,6 +220,8 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
      */
     final public function normalize($object, $format = null, array $context = []) : array
     {
+        $normalizationHelper = new NormalizationHelper($this->normalizer, $this->denormalizer, $format);
+
         $data = [
             'id' => $object->getId(),
             'stage' => $object->getStage(),
@@ -281,10 +284,9 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
                 })->toArray();
             }
 
+            $typeContext = array_merge($context, ['type' => true]);
             if ($object->getRelatedArticles()->notEmpty()) {
-                $data['relatedArticles'] = $object->getRelatedArticles()->map(function (Article $relatedArticle) use ($format, $context) {
-                    return $this->normalizer->normalize($relatedArticle, $format, $context);
-                })->toArray();
+                $data['relatedArticles'] = $normalizationHelper->normalizeSequenceToSnippets($object->getRelatedArticles(), $typeContext);
             }
 
             if ($object->getIssue()) {

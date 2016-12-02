@@ -17,7 +17,6 @@ use eLife\ApiSdk\Model\ArticleVoR;
 use eLife\ApiSdk\Model\AuthorEntry;
 use eLife\ApiSdk\Model\Block;
 use eLife\ApiSdk\Model\Copyright;
-use eLife\ApiSdk\Model\ExternalArticle;
 use eLife\ApiSdk\Model\Reviewer;
 use eLife\ApiSdk\Model\Subject;
 use eLife\ApiSdk\Promise\CallbackPromise;
@@ -53,8 +52,6 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
     public static function articleClass(string $type, string $status = null)
     {
         switch ($type) {
-            case 'external-article':
-                return ExternalArticle::class;
             case 'correction':
             case 'editorial':
             case 'feature':

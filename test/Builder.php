@@ -207,7 +207,7 @@ final class Builder
                         'copyright' => promise_for(new Copyright('CC-BY-4.0', 'Statement', 'Author et al')),
                         'authors' => new ArraySequence([new PersonAuthor(new PersonDetails('Author', 'Author'))]),
                         'reviewers' => new ArraySequence([new Reviewer(new PersonDetails('Reviewer', 'Reviewer'), 'Role')]),
-                        'relatedArticles' => new ArraySequence([new ExternalArticle('Title', new Place('1234', null, ['name' => 'test']), 'Author line', 'http://elifesciences.org')]),
+                        'relatedArticles' => new ArraySequence([new ExternalArticle('Related article title', new Place(null, null, ['Journal']), 'Author line', 'http://www.example.com/')]),
                     ];
                 },
                 ArticleVoR::class => function () {
@@ -288,7 +288,7 @@ final class Builder
                         'decisionLetter' => promise_for(new ArticleSection(new ArraySequence([new Paragraph('Decision letter')]))),
                         'decisionLetterDescription' => new ArraySequence([new Paragraph('Decision letter description')]),
                         'authorResponse' => promise_for(new ArticleSection(new ArraySequence([new Paragraph('Author response')]))),
-                        'relatedArticles' => new ArraySequence([new ExternalArticle('Title', new Place('1234', null, ['name' => 'test']), 'Author line', 'http://elifesciences.org')]),
+                        'relatedArticles' => new ArraySequence([new ExternalArticle('Related article title', new Place(null, null, ['Journal']), 'Author line', 'http://www.example.com/')]),
                     ];
                 },
             ];
@@ -371,7 +371,6 @@ final class Builder
                             ->withSubjects(new ArraySequence([
                                 self::for(Subject::class)->sample('1'),
                             ]))
-                            ->withRelatedArticles(promise_for(new ArraySequence([new ExternalArticle('Title', new Place('1234', null, ['name' => 'test']), 'Author line', 'http://elifesciences.org')])))
                             ->withResearchOrganisms([
                                 'Article 1 research organism',
                             ])
@@ -402,7 +401,6 @@ final class Builder
                             ->withContent(new ArraySequence([new Section('Article 09560 section title', 'article09560section', new ArraySequence([new Paragraph('Article 09560 text')]))]))
                             ->withAcknowledgements(new ArraySequence([new Paragraph('acknowledgements')]))
                             ->withEthics(new ArraySequence([new Paragraph('ethics')]))
-                            ->withRelatedArticles(promise_for(new ArraySequence([new ExternalArticle('Title', new Place('1234', null, ['name' => 'test']), 'Author line', 'http://elifesciences.org')])))
                             ->withDecisionLetter(promise_for(new ArticleSection(new ArraySequence([new Paragraph('Article 09560 decision letter text')]), '10.7554/eLife.09560decisionLetter')))
                             ->withDecisionLetterDescription(new ArraySequence([new Paragraph('Article 09560 decision letter description')]))
                             ->withAuthorResponse(promise_for(new ArticleSection(new ArraySequence([new Paragraph('Article 09560 author response text')]), '10.7554/eLife.09560authorResponse')));

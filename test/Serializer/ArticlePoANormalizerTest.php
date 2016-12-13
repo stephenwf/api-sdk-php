@@ -175,6 +175,17 @@ final class ArticlePoANormalizerTest extends ApiTestCase
                             'role' => 'Role',
                         ],
                     ],
+                    'relatedArticles' => [
+                        [
+                            'articleTitle' => 'Related article title',
+                            'journal' => [
+                                'name' => ['Journal'],
+                            ],
+                            'authorLine' => 'Author line',
+                            'uri' => 'http://www.example.com/',
+                            'type' => 'external-article',
+                        ],
+                    ],
                     'issue' => 1,
                     'abstract' => [
                         'content' => [
@@ -197,6 +208,7 @@ final class ArticlePoANormalizerTest extends ApiTestCase
                     ->withPromiseOfIssue(null)
                     ->withSequenceOfReviewers()
                     ->withPromiseOfAbstract(null)
+                    ->withSequenceOfRelatedArticles()
                     ->__invoke(),
                 [],
                 [
@@ -271,6 +283,7 @@ final class ArticlePoANormalizerTest extends ApiTestCase
                     ->withPromiseOfIssue(null)
                     ->withSequenceOfReviewers()
                     ->withPromiseOfAbstract(null)
+                    ->withSequenceOfRelatedArticles()
                     ->__invoke(),
                 ['snippet' => true],
                 [

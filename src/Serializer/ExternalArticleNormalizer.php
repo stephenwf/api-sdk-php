@@ -52,6 +52,10 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
             'uri' => $object->getUri(),
         ];
 
+        if (!empty($context['type'])) {
+            $data['type'] = 'external-article';
+        }
+
         return $data;
     }
 }

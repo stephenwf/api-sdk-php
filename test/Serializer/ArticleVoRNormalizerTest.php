@@ -184,6 +184,17 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                             'role' => 'Role',
                         ],
                     ],
+                    'relatedArticles' => [
+                        [
+                            'articleTitle' => 'Related article title',
+                            'journal' => [
+                                'name' => ['Journal'],
+                            ],
+                            'authorLine' => 'Author line',
+                            'uri' => 'http://www.example.com/',
+                            'type' => 'external-article',
+                        ],
+                    ],
                     'issue' => 1,
                     'abstract' => [
                         'content' => [
@@ -418,6 +429,7 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                     ->withPromiseOfDecisionLetter(null)
                     ->withDecisionLetterDescription(new EmptySequence())
                     ->withPromiseOfAuthorResponse(null)
+                    ->withSequenceOfRelatedArticles()
                     ->__invoke(),
                 [],
                 [
@@ -541,6 +553,7 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                     ->withPromiseOfDecisionLetter(null)
                     ->withDecisionLetterDescription(new EmptySequence())
                     ->withPromiseOfAuthorResponse(null)
+                    ->withSequenceOfRelatedArticles()
                     ->__invoke(),
                 ['snippet' => true],
                 [

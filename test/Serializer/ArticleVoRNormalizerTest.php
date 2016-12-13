@@ -13,8 +13,10 @@ use eLife\ApiSdk\Model\ArticleVoR;
 use eLife\ApiSdk\Model\Block\Paragraph;
 use eLife\ApiSdk\Model\Block\Section;
 use eLife\ApiSdk\Model\Copyright;
+use eLife\ApiSdk\Model\ExternalArticle;
 use eLife\ApiSdk\Model\Image;
 use eLife\ApiSdk\Model\Model;
+use eLife\ApiSdk\Model\Place;
 use eLife\ApiSdk\Model\Subject;
 use eLife\ApiSdk\Serializer\ArticleVoRNormalizer;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -140,6 +142,14 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                     ->withResearchOrganisms(['research organism'])
                     ->withDecisionLetter(promise_for(new ArticleSection(new ArraySequence([new Paragraph('Article 09560 decision letter text')]), '10.7554/eLife.09560decisionLetter')))
                     ->withAuthorResponse(promise_for(new ArticleSection(new ArraySequence([new Paragraph('Article 09560 author response text')]), '10.7554/eLife.09560authorResponse')))
+                    ->withSequenceOfRelatedArticles(
+                        Builder::for(ExternalArticle::class)
+                            ->withArticleTitle('External related article title')
+                            ->withJournal(new Place(null, null, ['Journal']))
+                            ->withAuthorLine('Author line')
+                            ->withUri('http://www.example.com/')
+                            ->__invoke()
+                    )
                     ->__invoke(),
                 [],
                 [
@@ -186,7 +196,7 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                     ],
                     'relatedArticles' => [
                         [
-                            'articleTitle' => 'Related article title',
+                            'articleTitle' => 'External related article title',
                             'journal' => [
                                 'name' => ['Journal'],
                             ],

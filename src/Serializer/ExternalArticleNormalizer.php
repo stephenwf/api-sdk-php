@@ -31,7 +31,7 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
     {
         return
             ExternalArticle::class === $type ||
-            (is_a($type, Model::class, true) && 'external' === ($data['type'] ?? 'unknown'))
+            (is_a($type, Model::class, true) && 'external-article' === ($data['type'] ?? 'unknown'))
         ;
     }
 

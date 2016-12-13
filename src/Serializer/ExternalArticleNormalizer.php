@@ -2,8 +2,8 @@
 
 namespace eLife\ApiSdk\Serializer;
 
-use eLife\ApiSdk\Model\Article;
 use eLife\ApiSdk\Model\ExternalArticle;
+use eLife\ApiSdk\Model\Model;
 use eLife\ApiSdk\Model\Place;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
@@ -31,7 +31,7 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
     {
         return
             ExternalArticle::class === $type ||
-            (Article::class === $type && 'external' === ($data['type'] ?? 'unknown'))
+            (is_a($type, Model::class, true) && 'external' === ($data['type'] ?? 'unknown'))
         ;
     }
 

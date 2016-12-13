@@ -310,7 +310,7 @@ final class ArticleVoRNormalizer extends ArticleVersionNormalizer
             ||
             (ArticleVersion::class === $type && 'vor' === $data['status'])
             ||
-            Model::class === $type && $this->isArticleType($data['type'] ?? 'unknown') && 'vor' === ($data['status'] ?? 'unknown');
+            is_a($type, Model::class, true) && $this->isArticleType($data['type'] ?? 'unknown') && 'vor' === ($data['status'] ?? 'unknown');
     }
 
     /**

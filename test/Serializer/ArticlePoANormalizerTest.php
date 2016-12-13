@@ -5,6 +5,7 @@ namespace test\eLife\ApiSdk\Serializer;
 use eLife\ApiClient\ApiClient\ArticlesClient;
 use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Collection\ArraySequence;
+use eLife\ApiSdk\Model\Article;
 use eLife\ApiSdk\Model\ArticlePoA;
 use eLife\ApiSdk\Model\Block\Paragraph;
 use eLife\ApiSdk\Model\Copyright;
@@ -90,7 +91,8 @@ final class ArticlePoANormalizerTest extends ApiTestCase
     {
         return [
             'article poa' => [[], ArticlePoA::class, [], true],
-            'article poa by type' => [['type' => 'research-article', 'status' => 'poa'], Model::class, [], true],
+            'article poa by article type' => [['type' => 'research-article', 'status' => 'poa'], Article::class, [], true],
+            'article poa by model type' => [['type' => 'research-article', 'status' => 'poa'], Model::class, [], true],
             'non-article poa' => [[], get_class($this), [], false],
         ];
     }

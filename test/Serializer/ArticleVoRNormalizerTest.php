@@ -7,6 +7,7 @@ use eLife\ApiSdk\ApiSdk;
 use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\EmptySequence;
 use eLife\ApiSdk\Model\Appendix;
+use eLife\ApiSdk\Model\Article;
 use eLife\ApiSdk\Model\ArticleSection;
 use eLife\ApiSdk\Model\ArticleVoR;
 use eLife\ApiSdk\Model\Block\Paragraph;
@@ -96,7 +97,8 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
     {
         return [
             'article vor' => [[], ArticleVoR::class, [], true],
-            'article vor by type' => [['type' => 'research-article', 'status' => 'vor'], Model::class, [], true],
+            'article vor by article type' => [['type' => 'research-article', 'status' => 'vor'], Article::class, [], true],
+            'article vor by model type' => [['type' => 'research-article', 'status' => 'vor'], Model::class, [], true],
             'non-article vor' => [[], get_class($this), [], false],
         ];
     }

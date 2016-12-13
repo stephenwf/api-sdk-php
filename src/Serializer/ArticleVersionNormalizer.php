@@ -101,14 +101,14 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
                     return $article['issue'] ?? null;
                 });
 
-            $data['reviewers'] = new PromiseSequence($complete
-                ->then(function (Result $article) {
-                    return $article['reviewers'] ?? [];
-                }));
-
             $data['relatedArticles'] = new PromiseSequence($complete
                 ->then(function (Result $article) {
                     return $article['relatedArticles'] ?? [];
+                }));
+
+            $data['reviewers'] = new PromiseSequence($complete
+                ->then(function (Result $article) {
+                    return $article['reviewers'] ?? [];
                 }));
         } else {
             $complete = null;
@@ -121,9 +121,9 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
 
             $data['issue'] = promise_for($data['issue'] ?? null);
 
-            $data['reviewers'] = new ArraySequence($data['reviewers'] ?? []);
-
             $data['relatedArticles'] = new ArraySequence($data['relatedArticles'] ?? []);
+
+            $data['reviewers'] = new ArraySequence($data['reviewers'] ?? []);
         }
 
         $data['abstract'] = $data['abstract']
@@ -163,7 +163,6 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
         $data['versionDate'] = !empty($data['versionDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['versionDate']) : null;
         $data['statusDate'] = !empty($data['statusDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['statusDate']) : null;
 
-        //Article::class
         $data['relatedArticles'] = $data['relatedArticles']->map(function ($article) use ($format, $context) {
             return $this->denormalizer->denormalize(
                 $article,

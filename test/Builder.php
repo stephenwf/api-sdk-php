@@ -112,6 +112,14 @@ final class Builder
                         'uri' => 'http://www.example.com/',
                     ];
                 },
+                ExternalArticle::class => function () {
+                    return [
+                        'articleTitle' => 'External article title',
+                        'journal' => new Place(null, null, ['Another journal']),
+                        'authorLine' => 'Author et al',
+                        'uri' => 'http://www.example.com/',
+                    ];
+                },
                 Image::class => function () {
                     return [
                         'altText' => 'Image alt text',

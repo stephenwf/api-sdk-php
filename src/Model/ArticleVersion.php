@@ -3,7 +3,6 @@
 namespace eLife\ApiSdk\Model;
 
 use DateTimeImmutable;
-use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\Sequence;
 use GuzzleHttp\Promise\PromiseInterface;
 
@@ -233,6 +232,6 @@ abstract class ArticleVersion implements Article, HasDoi, HasId, HasSubjects
      */
     final public function getRelatedArticles(): Sequence
     {
-        return $this->relatedArticles === null ? new ArraySequence() : $this->relatedArticles;
+        return $this->relatedArticles;
     }
 }

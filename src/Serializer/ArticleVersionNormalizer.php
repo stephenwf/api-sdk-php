@@ -78,6 +78,8 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
 
     final public function denormalize($data, $class, $format = null, array $context = []) : ArticleVersion
     {
+        $normalizationHelper = new NormalizationHelper($this->normalizer, $this->denormalizer, $format);
+
         if (!empty($context['snippet'])) {
             $complete = $this->denormalizeSnippet($data);
 
@@ -163,14 +165,7 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
         $data['versionDate'] = !empty($data['versionDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['versionDate']) : null;
         $data['statusDate'] = !empty($data['statusDate']) ? DateTimeImmutable::createFromFormat(DATE_ATOM, $data['statusDate']) : null;
 
-        $data['relatedArticles'] = $data['relatedArticles']->map(function ($article) use ($format, $context) {
-            return $this->denormalizer->denormalize(
-                $article,
-                Article::class,
-                $format,
-                $context + ['snippet' => true]
-            );
-        });
+        $data['relatedArticles'] = $normalizationHelper->denormalizeSequence($data['relatedArticles'], Article::class, $context + ['snippet' => true]);
 
         return $this->denormalizeArticle($data, $complete, $class, $format, $context);
     }

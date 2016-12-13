@@ -21,7 +21,7 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
     {
         return new ExternalArticle(
             $data['articleTitle'],
-            $this->denormalizeJournal($data, $format, $context),
+            $this->denormalizer->denormalize($data['journal'], Place::class, $format, $context),
             $data['authorLine'],
             $data['uri']
         );
@@ -53,10 +53,5 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
         ];
 
         return $data;
-    }
-
-    private function denormalizeJournal($data, $format, $context) : Place
-    {
-        return $this->denormalizer->denormalize($data['journal'], Place::class, $format, $context);
     }
 }

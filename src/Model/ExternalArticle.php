@@ -2,13 +2,16 @@
 
 namespace eLife\ApiSdk\Model;
 
-final class ExternalArticle implements Model, Article
+final class ExternalArticle implements Article
 {
     private $articleTitle;
     private $journal;
     private $authorLine;
     private $uri;
 
+    /**
+     * @internal
+     */
     public function __construct(string $articleTitle, Place $journal, string $authorLine, string $uri)
     {
         $this->articleTitle = $articleTitle;

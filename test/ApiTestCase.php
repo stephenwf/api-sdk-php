@@ -856,8 +856,7 @@ abstract class ApiTestCase extends TestCase
                 [
                     'type' => 'external-article',
                     'articleTitle' => 'Transcriptional amplification in tumor cells with elevated c-Myc',
-                    'journal' =>
-                        [
+                    'journal' => [
                             'name' => ['Cell'],
                         ],
                     'authorLine' => 'C. Y. Lin et al',

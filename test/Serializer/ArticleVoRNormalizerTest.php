@@ -143,6 +143,7 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                     ->withDecisionLetter(promise_for(new ArticleSection(new ArraySequence([new Paragraph('Article 09560 decision letter text')]), '10.7554/eLife.09560decisionLetter')))
                     ->withAuthorResponse(promise_for(new ArticleSection(new ArraySequence([new Paragraph('Article 09560 author response text')]), '10.7554/eLife.09560authorResponse')))
                     ->withSequenceOfRelatedArticles(
+                        Builder::for(ArticleVoR::class)->sample('homo-naledi'),
                         Builder::for(ExternalArticle::class)
                             ->withArticleTitle('External related article title')
                             ->withJournal(new Place(null, null, ['Journal']))
@@ -195,6 +196,44 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                         ],
                     ],
                     'relatedArticles' => [
+                        [
+                            'id' => '09560',
+                            'stage' => 'published',
+                            'version' => 1,
+                            'type' => 'research-article',
+                            'doi' => '10.7554/eLife.09560',
+                            'authorLine' => 'Lee R Berger et al',
+                            'title' => '<i>Homo naledi</i>, a new species of the genus <i>Homo</i> from the Dinaledi Chamber, South Africa',
+                            'volume' => 4,
+                            'elocationId' => 'e09560',
+                            'published' => '2015-09-10T00:00:00Z',
+                            'versionDate' => '2015-09-10T00:00:00Z',
+                            'statusDate' => '2015-09-10T00:00:00Z',
+                            'pdf' => 'https://elifesciences.org/content/4/e09560.pdf',
+                            'subjects' => [
+                                0 => [
+                                    'id' => 'genomics-evolutionary-biology',
+                                    'name' => 'Genomics and Evolutionary Biology',
+                                ],
+                            ],
+                            'status' => 'vor',
+                            'impactStatement' => 'A new hominin species has been unearthed in the Dinaledi Chamber of the Rising Star cave system in the largest assemblage of a single species of hominins yet discovered in Africa.',
+                            'image' => [
+                                'thumbnail' => [
+                                    'alt' => '',
+                                    'sizes' => [
+                                        '16:9' => [
+                                            250 => 'https://placehold.it/250x141',
+                                            500 => 'https://placehold.it/500x281',
+                                        ],
+                                        '1:1' => [
+                                            70 => 'https://placehold.it/70x70',
+                                            140 => 'https://placehold.it/140x140',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
                         [
                             'articleTitle' => 'External related article title',
                             'journal' => [
@@ -412,6 +451,11 @@ final class ArticleVoRNormalizerTest extends ApiTestCase
                         'doi' => '10.7554/eLife.09560authorResponse',
                     ],
                 ],
+                function ($test) {
+                    $test->mockSubjectCall('genomics-evolutionary-biology', true);
+                    $test->mockArticleCall('09560', true, $vor = true);
+                    $test->mockArticleCall('14107', true);
+                },
             ],
             'minimum' => [
                 Builder::for(ArticleVoR::class)

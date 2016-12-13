@@ -229,7 +229,7 @@ abstract class ArticleVersionNormalizer implements NormalizerInterface, Denormal
             $data['published'] = $object->getPublishedDate()->format(ApiSdk::DATE_FORMAT);
         }
         if ($object->getVersionDate()) {
-            $data['versionDate'] = $object->getPublishedDate()->format(ApiSdk::DATE_FORMAT);
+            $data['versionDate'] = $object->getVersionDate()->format(ApiSdk::DATE_FORMAT);
         }
         if ($object->getStatusDate()) {
             $data['statusDate'] = $object->getStatusDate()->format(ApiSdk::DATE_FORMAT);

@@ -2,7 +2,6 @@
 
 namespace eLife\ApiSdk;
 
-use eLife\ApiSdk\Collection\ArraySequence;
 use eLife\ApiSdk\Collection\PromiseSequence;
 use eLife\ApiSdk\Collection\Sequence;
 use GuzzleHttp\Promise\FulfilledPromise;
@@ -43,7 +42,7 @@ trait ArrayFromIterator
     final private function all() : PromiseSequence
     {
         return new PromiseSequence(
-            new FulfilledPromise(new ArraySequence($this->toArray()))
+            new FulfilledPromise($this->toArray())
         );
     }
 }

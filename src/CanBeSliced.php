@@ -14,7 +14,7 @@ trait CanBeSliced
 
     abstract public function slice(int $offset, int $length = null) : Sequence;
 
-    final private function getPage(int $page)
+    final private function getPage(int $page) : Sequence
     {
         if (empty($this->pages[$page])) {
             $this->pages[$page] = $this->slice($this->pageBatch * ($page - 1), $this->pageBatch);
@@ -24,7 +24,7 @@ trait CanBeSliced
             throw new LogicException('Could not find page '.$page);
         }
 
-        return $this->pages[$page]->toArray();
+        return $this->pages[$page];
     }
 
     final private function resetPages()

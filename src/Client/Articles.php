@@ -117,7 +117,13 @@ final class Articles implements Iterator, Sequence
                 $articles = [];
 
                 foreach ($result['items'] as $article) {
-                    if (isset($this->articles[$article['id']])) {
+                    // *** temporary hack for invalid articles
+                    // we resolve them as null, and let the client applications
+                    // skip them rather than exploding when encountering them
+                    if (isset($article['-invalid'])) {
+                        $articles[] = null;
+                    // *** end of temporary hack
+                    } elseif (isset($this->articles[$article['id']])) {
                         $articles[] = $this->articles[$article['id']]->wait();
                     } else {
                         $articles[] = $article = $this->denormalizer->denormalize($article, ArticleVersion::class, null,

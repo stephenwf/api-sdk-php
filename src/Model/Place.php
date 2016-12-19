@@ -2,7 +2,7 @@
 
 namespace eLife\ApiSdk\Model;
 
-final class Place
+final class Place implements CastsToString, HasId
 {
     private $id;
     private $coordinates;
@@ -40,7 +40,7 @@ final class Place
     /**
      * @return string[]
      */
-    public function getName(): array
+    public function getName() : array
     {
         return $this->name;
     }

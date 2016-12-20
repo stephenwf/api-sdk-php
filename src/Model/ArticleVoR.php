@@ -68,7 +68,7 @@ final class ArticleVoR extends ArticleVersion implements HasBanner, HasContent, 
         PromiseInterface $decisionLetter,
         Sequence $decisionLetterDescription,
         PromiseInterface $authorResponse,
-        Sequence $relatedArticles = null
+        Sequence $relatedArticles
     ) {
         parent::__construct($id, $stage, $version, $type, $doi, $authorLine, $titlePrefix, $title, $published, $versionDate, $statusDate,
             $volume, $elocationId, $pdf, $subjects, $researchOrganisms, $abstract, $issue, $copyright, $authors, $reviewers, $relatedArticles);

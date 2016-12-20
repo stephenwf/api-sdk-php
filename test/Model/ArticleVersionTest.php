@@ -13,7 +13,6 @@ use eLife\ApiSdk\Model\ExternalArticle;
 use eLife\ApiSdk\Model\HasDoi;
 use eLife\ApiSdk\Model\HasId;
 use eLife\ApiSdk\Model\HasSubjects;
-use eLife\ApiSdk\Model\Model;
 use eLife\ApiSdk\Model\PersonAuthor;
 use eLife\ApiSdk\Model\PersonDetails;
 use eLife\ApiSdk\Model\Subject;

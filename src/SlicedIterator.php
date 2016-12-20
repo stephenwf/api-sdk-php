@@ -2,6 +2,8 @@
 
 namespace eLife\ApiSdk;
 
+use OutOfRangeException;
+
 trait SlicedIterator
 {
     use CanBeSliced;
@@ -10,10 +12,15 @@ trait SlicedIterator
 
     final public function current()
     {
-        $page = ceil($this->key / $this->pageBatch);
+        $page = (int) ceil($this->key / $this->pageBatch);
         $inPage = $this->key - ($page * $this->pageBatch) + $this->pageBatch - 1;
 
-        return $this->getPage($page)[$inPage];
+        $pageContents = $this->getPage($page);
+        if (!array_key_exists($inPage, $pageContents)) {
+            throw new OutOfRangeException("Cannot find element with key $inPage in page $page");
+        }
+
+        return $pageContents[$inPage];
     }
 
     final public function next()

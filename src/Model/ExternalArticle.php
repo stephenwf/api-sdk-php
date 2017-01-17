@@ -39,4 +39,19 @@ final class ExternalArticle implements Article
     {
         return $this->uri;
     }
+
+    public function getId(): string
+    {
+        return $this->uri;
+    }
+
+    public function getType(): string
+    {
+        return 'external-article';
+    }
+
+    public function getTitle(): string
+    {
+        return $this->getArticleTitle();
+    }
 }

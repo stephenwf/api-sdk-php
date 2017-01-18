@@ -20,7 +20,7 @@ final class ExternalArticle implements Article
         $this->uri = $uri;
     }
 
-    public function getArticleTitle(): string
+    public function getTitle(): string
     {
         return $this->articleTitle;
     }
@@ -38,5 +38,15 @@ final class ExternalArticle implements Article
     public function getUri(): string
     {
         return $this->uri;
+    }
+
+    public function getId(): string
+    {
+        return 'external-'.sha1($this->uri);
+    }
+
+    public function getType(): string
+    {
+        return 'external-article';
     }
 }

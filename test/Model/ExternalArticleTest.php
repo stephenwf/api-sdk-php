@@ -8,9 +8,6 @@ use eLife\ApiSdk\Model\Place;
 use PHPUnit_Framework_TestCase;
 use test\eLife\ApiSdk\Builder;
 
-/**
- * @group failing
- */
 final class ExternalArticleTest extends PHPUnit_Framework_TestCase
 {
     /**

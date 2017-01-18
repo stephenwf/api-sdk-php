@@ -46,7 +46,7 @@ final class ExternalArticleNormalizer implements NormalizerInterface, Denormaliz
     public function normalize($object, $format = null, array $context = []) : array
     {
         $data = [
-            'articleTitle' => $object->getArticleTitle(),
+            'articleTitle' => $object->getTitle(),
             'journal' => $this->normalizer->normalize($object->getJournal(), $format, $context),
             'authorLine' => $object->getAuthorLine(),
             'uri' => $object->getUri(),

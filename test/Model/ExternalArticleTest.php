@@ -30,7 +30,7 @@ final class ExternalArticleTest extends PHPUnit_Framework_TestCase
             ->withArticleTitle('foo')
             ->__invoke();
 
-        $this->assertSame('foo', $article->getArticleTitle());
+        $this->assertSame('foo', $article->getTitle());
     }
 
     /**

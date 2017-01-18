@@ -16,6 +16,7 @@ use eLife\ApiClient\ApiClient\PodcastClient;
 use eLife\ApiClient\ApiClient\SearchClient;
 use eLife\ApiClient\ApiClient\SubjectsClient;
 use eLife\ApiClient\HttpClient;
+use eLife\ApiClient\HttpClient\UserAgentPrependingHttpClient;
 use eLife\ApiSdk\Client\AnnualReports;
 use eLife\ApiSdk\Client\Articles;
 use eLife\ApiSdk\Client\BlogArticles;
@@ -58,6 +59,7 @@ use eLife\ApiSdk\Serializer\Reference;
 use eLife\ApiSdk\Serializer\ReviewerNormalizer;
 use eLife\ApiSdk\Serializer\SearchSubjectsNormalizer;
 use eLife\ApiSdk\Serializer\SubjectNormalizer;
+use PackageVersions\Versions;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
 
@@ -65,6 +67,7 @@ final class ApiSdk
 {
     const DATE_FORMAT = 'Y-m-d\TH:i:s\Z';
 
+    private $version;
     private $httpClient;
     private $articlesClient;
     private $blogClient;
@@ -94,7 +97,18 @@ final class ApiSdk
 
     public function __construct(HttpClient $httpClient)
     {
-        $this->httpClient = $httpClient;
+        $originalVersion = Versions::getVersion('elife/api-sdk');
+        list($version, $reference) = explode('@', $originalVersion);
+        if (false !== strpos($version, 'dev')) {
+            if (40 === strlen($reference)) {
+                $version = implode('@', [$version, substr($reference, 0, 7)]);
+            } else {
+                $version = $originalVersion;
+            }
+        }
+
+        $this->version = $version;
+        $this->httpClient = new UserAgentPrependingHttpClient($httpClient, 'eLifeApiSdk/'.$this->version);
         $this->articlesClient = new ArticlesClient($this->httpClient);
         $this->blogClient = new BlogClient($this->httpClient);
         $this->collectionsClient = new CollectionsClient($this->httpClient);
@@ -163,6 +177,11 @@ final class ApiSdk
             new Reference\UnknownReferenceNormalizer(),
             new Reference\WebReferenceNormalizer(),
         ], [new JsonEncoder()]);
+    }
+
+    public function getVersion() : string
+    {
+        return $this->version;
     }
 
     public function annualReports() : AnnualReports

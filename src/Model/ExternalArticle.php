@@ -42,7 +42,7 @@ final class ExternalArticle implements Article
 
     public function getId(): string
     {
-        return $this->uri;
+        return 'external-'.sha1($this->uri);
     }
 
     public function getType(): string

@@ -8,6 +8,9 @@ use eLife\ApiSdk\Model\Place;
 use PHPUnit_Framework_TestCase;
 use test\eLife\ApiSdk\Builder;
 
+/**
+ * @group failing
+ */
 final class ExternalArticleTest extends PHPUnit_Framework_TestCase
 {
     /**
@@ -31,6 +34,31 @@ final class ExternalArticleTest extends PHPUnit_Framework_TestCase
             ->__invoke();
 
         $this->assertSame('foo', $article->getTitle());
+    }
+
+    /**
+     * @test
+     */
+    public function it_has_an_article_type()
+    {
+        /** @var ExternalArticle $article */
+        $article = Builder::for(ExternalArticle::class)
+            ->__invoke();
+
+        $this->assertSame('external-article', $article->getType());
+    }
+
+    /**
+     * @test
+     */
+    public function it_has_an_article_id()
+    {
+        /** @var ExternalArticle $article */
+        $article = Builder::for(ExternalArticle::class)
+            ->withUri('http://www.example.com/#1234')
+            ->__invoke();
+
+        $this->assertSame('external-64d4ba4ded4ab0e4c9e67550ff9520735adb2bfe', $article->getId());
     }
 
     /**
